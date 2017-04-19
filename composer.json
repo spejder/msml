@@ -1,7 +1,7 @@
 {
     "name": "spejder/msml",
 
-    "description": "Medlemssystem mailinglist thingy",
+    "description": "Medlemsservice til Mailingliste-synkronisering",
 
     "require": {
         "php": ">=7.0.0",
