@@ -2,7 +2,7 @@
     "name": "spejder/msml",
 
     "description": "Medlemsservice til Mailingliste-synkronisering",
-
+    "license": "MIT",
     "require": {
         "php": ">=7.0.0",
         "jacobsteringa/odoo-client": "dev-master",
