@@ -1,0 +1,24 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+use Stecman\Component\Symfony\Console\BashCompletion\CompletionCommand;
+
+use MSML\Command\DefaultCommand;
+
+$application = new Application('msml');
+$command = new DefaultCommand();
+$completion = new CompletionCommand();
+
+$application->add($completion);
+$application->add($command);
+
+$application->setDefaultCommand($command->getName());
+$application->run();

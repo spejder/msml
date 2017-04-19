@@ -1,0 +1,10 @@
+mailinglist: MLMMJ
+
+credentials:
+  # Medlemsnummer er brugernavn:
+  user: 123456
+  password: correcthorsebatterystaple
+
+mlmmj:
+  # Sudo, ssh, whatever to get to the /usr/bin/mlmmj-* binaries (remember trailing space):
+  command_prefix: 'ssh mail.example.net '

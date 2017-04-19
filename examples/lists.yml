@@ -1,0 +1,309 @@
+mikroleder@b21b.dk:
+  description: Ledere og assistenter i mikro-grenen.
+  select:
+    - org: 2227-1
+      type: leaders
+      relatives: false
+mikromedlem@b21b.dk:
+  description: Ledere, assistenter, spejdere og forældre i mikro-grenen.
+  select:
+    - org: 2227-1
+      type: leaders
+      relatives: false
+    - org: 2227-1
+      type: members
+      relatives: true
+minileder@b21b.dk:
+  description: Ledere og assistenter i mini-grenen.
+  select:
+    - org: 2227-2
+      type: leaders
+      relatives: false
+minimedlem@b21b.dk:
+  description: Ledere, assistenter, spejdere og forældre i mini-grenen.
+  select:
+    - org: 2227-2
+      type: leaders
+      relatives: false
+    - org: 2227-2
+      type: members
+      relatives: true
+juniorleder@b21b.dk:
+  description: Ledere og assistenter i junior-grenen.
+  select:
+    - org: 2227-3
+      type: leaders
+      relatives: false
+juniormedlem@b21b.dk:
+  description: Ledere, assistenter, spejdere og forældre i junior-grenen.
+  select:
+    - org: 2227-3
+      type: leaders
+      relatives: false
+    - org: 2227-3
+      type: members
+      relatives: true
+tropleder@b21b.dk:
+  description: Ledere og assistenter i troppen.
+  select:
+    - org: 2227-5
+      type: leaders
+      relatives: false
+tropmedlem@b21b.dk:
+  description: Ledere, assistenter, spejdere og forældre i troppen.
+  select:
+    - org: 2227-5
+      type: leaders
+      relatives: false
+    - org: 2227-5
+      type: members
+      relatives: true
+radiser@b21b.dk:
+  description: Troppens ledere og assistenter, samt patruljeledere og patruljeassistenter.
+  select:
+    - org: 2227-5
+      type: leaders
+      relatives: false
+    - org: 2227-12
+      type: leaders
+      relatives: false
+    - org: 2227-14
+      type: leaders
+      relatives: false
+    - org: 2227-15
+      type: leaders
+      relatives: false
+    - org: 2227-22
+      type: leaders
+      relatives: false
+    - org: 2227-37
+      type: leaders
+      relatives: false
+    - org: 2227-39
+      type: leaders
+      relatives: false
+sirius2leder@b21b.dk:
+  description: Ledere og assistenter i Sirius II-klanen.
+  select:
+    - org: 2227-7
+      type: leaders
+      relatives: false
+sirius2medlem@b21b.dk:
+  description: Ledere, assistenter og spejdere Sirius II-klanen.
+  select:
+    - org: 2227-7
+      type: leaders
+      relatives: false
+    - org: 2227-7
+      type: members
+      relatives: false
+polarisleder@b21b.dk:
+  description: Ledere og assistenter i Polaris-klanen.
+  select:
+    - org: 2227-29
+      type: leaders
+      relatives: false
+polarismedlem@b21b.dk:
+  description: Ledere, assistenter og spejdere Polaris-klanen.
+  select:
+    - org: 2227-29
+      type: leaders
+      relatives: false
+    - org: 2227-29
+      type: members
+      relatives: false
+kilakleder@b21b.dk:
+  description: Ledere og assistenter i Kilak-klanen.
+  select:
+    - org: 2227-31
+      type: leaders
+      relatives: false
+kilakmedlem@b21b.dk:
+  description: Ledere og assistenter og spejdere i Kilak-klanen.
+  select:
+    - org: 2227-31
+      type: leaders
+      relatives: false
+    - org: 2227-31
+      type: members
+      relatives: false
+eqalukleder@b21b.dk:
+  description: Ledere og assistenter i Eqaluk-klanen.
+  select:
+    - org: 2227-34
+      type: leaders
+      relatives: false
+eqalukmedlem@b21b.dk:
+  description: Ledere og assistenter og spejdere i Eqaluk-klanen.
+  select:
+    - org: 2227-34
+      type: leaders
+      relatives: false
+    - org: 2227-34
+      type: members
+      relatives: false
+haandvaerkerleder@b21b.dk:
+  description: Ledere og assistenter i Håndværker-klanen.
+  select:
+    - org: 2227-33
+      type: leaders
+      relatives: false
+haandvaerkermedlem@b21b.dk:
+  description: Ledere og assistenter og spejdere i Håndværker-klanen.
+  select:
+    - org: 2227-33
+      type: leaders
+      relatives: false
+    - org: 2227-33
+      type: members
+      relatives: false
+bobleder@b21b.dk:
+  description: Ledere og assistenter i Kilak-, Polaris-, Eqaluk- og Håndværker-klanerne (Bellahøj Old Boys).
+  select:
+    - org: 2227-30
+      type: leaders
+      relatives: false
+    - org: 2227-31
+      type: leaders
+      relatives: false
+    - org: 2227-32
+      type: leaders
+      relatives: false
+    - org: 2227-33
+      type: leaders
+      relatives: false
+    - org: 2227-34
+      type: leaders
+      relatives: false
+bobmedlem@b21b.dk:
+  description: Ledere og assistenter og spejdere i Kilak-, Polaris, Eqaluk- og Håndværker-klanerne (Bellahøj Old Boys).
+  select:
+    - org: 2227-30
+      type: leaders
+      relatives: false
+    - org: 2227-31
+      type: leaders
+      relatives: false
+    - org: 2227-32
+      type: leaders
+      relatives: false
+    - org: 2227-33
+      type: leaders
+      relatives: false
+    - org: 2227-34
+      type: leaders
+      relatives: false
+    - org: 2227-30
+      type: members
+      relatives: false
+    - org: 2227-31
+      type: members
+      relatives: false
+    - org: 2227-32
+      type: members
+      relatives: false
+    - org: 2227-33
+      type: members
+      relatives: false
+    - org: 2227-34
+      type: members
+      relatives: false
+logen@b21b.dk:
+  description: Logen -- diverse tilknyttede.
+  select:
+    - org: 2227-40
+      type: members
+      relatives: false
+gruppeleder@b21b.dk:
+  description: Gruppens gruppeledere.
+  select:
+    - org: 2227
+      type: gruppeleder
+      relatives: false
+formand@b21b.dk:
+  description: Gruppens formand.
+  select:
+    - org: 2227
+      type: bestyrelsesformand
+      relatives: false
+penge@b21b.dk:
+  description: Gruppens kasserer.
+  select:
+    - org: 2227
+      type: gruppekasserer
+      relatives: false
+ledere@b21b.dk:
+  description: Ledere
+  select:
+    - org: 2227
+      type: leaderlist
+      relatives: false
+bestyrelse@b21b.dk:
+  description: Bestyrelse
+  select:
+    - org: 2227
+      type: board
+      relatives: false
+    - org: 2227
+      type: gruppeleder
+      relatives: false
+webmaster@b21b.dk:
+  description: Webmaster
+  select:
+    - org: 2227
+      type: webmaster
+      relatives: false
+store@b21b.dk:
+  description: De "store" -- klaner, ledere, bestyrelse og logen.
+  select:
+    - org: 2227
+      type: leaderlist
+      relatives: false
+    - org: 2227
+      type: board
+      relatives: false
+    - org: 2227-40
+      type: members
+      relatives: false
+    - org: 2227-7
+      type: leaders
+      relatives: false
+    - org: 2227-7
+      type: members
+      relatives: false
+    - org: 2227-29
+      type: leaders
+      relatives: false
+    - org: 2227-29
+      type: members
+      relatives: false
+    - org: 2227-30
+      type: leaders
+      relatives: false
+    - org: 2227-31
+      type: leaders
+      relatives: false
+    - org: 2227-32
+      type: leaders
+      relatives: false
+    - org: 2227-33
+      type: leaders
+      relatives: false
+    - org: 2227-34
+      type: leaders
+      relatives: false
+    - org: 2227-30
+      type: members
+      relatives: false
+    - org: 2227-31
+      type: members
+      relatives: false
+    - org: 2227-32
+      type: members
+      relatives: false
+    - org: 2227-33
+      type: members
+      relatives: false
+    - org: 2227-34
+      type: members
+      relatives: false

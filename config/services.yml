@@ -1,0 +1,15 @@
+services:
+  medlemsservice:
+    class: MSML\Medlemsservice
+    arguments: ['@config']
+  enheder:
+    class: MSML\Enheder
+    arguments: ['@medlemsservice']
+  profiles:
+    class: MSML\Profiles
+    arguments: ['@medlemsservice']
+  mailinglist.factory:
+    class: MSML\MailingList\MailingListFactory
+    arguments: ['@config']
+  config:
+    class: MSML\Config

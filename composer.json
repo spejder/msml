@@ -1,0 +1,23 @@
+{
+    "name": "MSML",
+
+    "description": "Medlemssystem mailinglist thingy",
+
+    "require": {
+        "php": ">=7.0.0",
+        "jacobsteringa/odoo-client": "dev-master",
+        "symfony/yaml": "^3.2",
+        "symfony/dependency-injection": "^3.2",
+        "symfony/config": "^3.2",
+        "symfony/console": "^3.2",
+        "stecman/symfony-console-completion": "^0.7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MSML\\": "src/"
+        }
+    },
+    "bin": [
+        "msml"
+    ]
+}
