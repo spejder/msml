@@ -3,7 +3,7 @@
 namespace MSML;
 
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Yaml\Parser;
 
 /**
  * Config.
@@ -21,9 +21,10 @@ class Config implements \ArrayAccess
     public function __construct()
     {
         $fileLocator = new FileLocator(['.', './config']);
+        $yamlParser = new Parser();
 
-        $this->config['config'] = Yaml::parse(file_get_contents($fileLocator->locate('config.yml')));
-        $this->config['lists'] = Yaml::parse(file_get_contents($fileLocator->locate('lists.yml')));
+        $this->config['config'] = $yamlParser->parse(file_get_contents($fileLocator->locate('config.yml')));
+        $this->config['lists'] = $yamlParser->parse(file_get_contents($fileLocator->locate('lists.yml')));
     }
 
     /**
