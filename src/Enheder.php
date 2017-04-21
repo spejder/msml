@@ -2,10 +2,8 @@
 
 namespace MSML;
 
-use Jsg\Odoo\Odoo;
-
 /**
- * Collection of Enhed.
+ * A class holding a collection of Enhed's.
  */
 class Enheder
 {
@@ -17,7 +15,7 @@ class Enheder
      *
      * @param Odoo $odooClient The Odoo Client to use for lookups.
      */
-    public function __construct(Odoo $odooClient)
+    public function __construct(\Jsg\Odoo\Odoo $odooClient)
     {
         $this->odooClient = $odooClient;
         $this->collection = [];
@@ -47,9 +45,7 @@ class Enheder
      */
     protected function requestEnhed(string $enhedId)
     {
-        $criteria = [
-            ['organization_code', '=', $enhedId],
-        ];
+        $criteria = [['organization_code', '=', $enhedId]];
 
         $organizationCode = $this->odooClient->search('member.organization', $criteria);
 

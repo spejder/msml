@@ -5,7 +5,7 @@ namespace MSML;
 use Jsg\Odoo\Odoo;
 
 /**
- * Collection of Profile.
+ * Profile collection class.
  */
 class Profiles
 {
@@ -47,11 +47,7 @@ class Profiles
      */
     protected function requestProfile(int $profileId)
     {
-        $criteria = [
-            ['id', '=', $profileId],
-        ];
-
-        $profiles = $this->odooClient->search('member.profile', $criteria);
+        $profiles = $this->odooClient->search('member.profile', [['id', '=', $profileId]]);
 
         if (empty($profileId)) {
             $this->collection[$profileId] = null;
