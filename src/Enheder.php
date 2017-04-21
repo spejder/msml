@@ -55,8 +55,10 @@ class Enheder
 
         if (empty($organizationCode)) {
             $this->collection[$enhedId] = null;
-        } else {
-            $this->collection[$enhedId] = new Enhed($this->odooClient, reset($organizationCode), $enhedId);
+
+            return;
         }
+
+        $this->collection[$enhedId] = new Enhed($this->odooClient, reset($organizationCode), $enhedId);
     }
 }

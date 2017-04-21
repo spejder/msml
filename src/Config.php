@@ -49,9 +49,11 @@ class Config implements \ArrayAccess
     {
         if (is_null($offset)) {
             $this->config[] = $value;
-        } else {
-            $this->config[$offset] = $value;
+
+            return;
         }
+
+        $this->config[$offset] = $value;
     }
 
     /**

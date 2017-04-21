@@ -120,11 +120,11 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
                     if (empty($conf['relatives'])) {
                         return array_filter([$mail]);
-                    } else {
-                        $relmails = $profile->getRelationMails();
-
-                        return array_filter(array_merge($relmails, [$mail]));
                     }
+
+                    $relmails = $profile->getRelationMails();
+
+                    return array_filter(array_merge($relmails, [$mail]));
                 }, $profileIds);
 
                 if (!empty($mails)) {

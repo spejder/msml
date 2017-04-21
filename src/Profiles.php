@@ -55,8 +55,10 @@ class Profiles
 
         if (empty($profileId)) {
             $this->collection[$profileId] = null;
-        } else {
-            $this->collection[$profileId] = new Profile($this->odooClient, $this, reset($profiles));
+
+            return;
         }
+
+        $this->collection[$profileId] = new Profile($this->odooClient, $this, reset($profiles));
     }
 }
