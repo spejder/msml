@@ -66,9 +66,12 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         throw new \RuntimeException('List '.$listName.' not found.');
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function currentSubscribers()
     {
-        $command = $this->commandPrefix.'/usr/bin/mlmmj-list -L '.$this->listFolder;
+        $command = $this->mlmmjCommand('list');
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
             $this->output->writeln('Executing commmand: '.$command);
@@ -85,10 +88,13 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         $this->currentSubscribers = explode("\n", trim($subscribers));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function unsubscribe(array $unsubscribers)
     {
         foreach ($unsubscribers as $unsubscribe) {
-            $command = $this->commandPrefix.'/usr/bin/mlmmj-unsub -L '.$this->listFolder.' -a '.$unsubscribe;
+            $command = $this->mlmmjCommand('unsub', ['-a', $unsubscribe]);
 
             if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                 $this->output->writeln('Executing commmand: '.$command);
@@ -98,10 +104,13 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     protected function subscribe(array $subscribers)
     {
         foreach ($subscribers as $subscribe) {
-            $command = $this->commandPrefix.'/usr/bin/mlmmj-sub -L '.$this->listFolder.' -a '.$subscribe;
+            $command = $this->mlmmjCommand('sub', ['-a', $subscribe]);
 
             if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
                 $this->output->writeln('Executing commmand: '.$command);
@@ -109,5 +118,20 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
 
             //            `$command`;
         }
+    }
+
+    /**
+     * Build a MLMMJ command to execute.
+     *
+     * @param string $command The MLMMJ commmand, i.e. 'list' for /usr/bin/mlmmj-list
+     * @param string[] $extraArguments Extra arguments to pass to the commmand
+     *
+     * @return string The command
+     */
+    protected function mlmmjCommand(string $command, array $extraArguments = [])
+    {
+        $extraArguments = implode(' ', $extraArguments);
+
+        return "{$this->commandPrefix}/usr/bin/mlmmj-{$command} -L {$this->listFolder} {$extraArguments}";
     }
 }
