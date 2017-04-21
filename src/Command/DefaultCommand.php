@@ -5,6 +5,7 @@ namespace MSML\Command;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -66,6 +67,13 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             ->setName('sync')
             ->setDescription('Sync mailing lists with Medlemsservice.')
             ->setHelp('This command allows you to synchronize configured mailing lists with Medlemsservice.')
+            ->addOption(
+                'dry-run',
+                null,
+                InputOption::VALUE_NONE,
+                'Do dry run (dont change anything)',
+                null
+            )
             ->addArgument(
                 'list',
                 InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
@@ -87,6 +95,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $profiles = $this->container->get('profiles');
 
         $selectedLists = $input->getArgument('list');
+        $this->config['dry-run'] = $input->getOption('dry-run');
 
         // If some lists added on command line limit sync to those
         // lists.

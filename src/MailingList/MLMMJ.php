@@ -100,7 +100,9 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
                 $this->output->writeln('Executing commmand: '.$command);
             }
 
-            //            `$command`;
+            if (!$this->config['dry-run']) {
+                `$command`;
+            }
         }
     }
 
@@ -116,7 +118,9 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
                 $this->output->writeln('Executing commmand: '.$command);
             }
 
-            //            `$command`;
+            if (!$this->config['dry-run']) {
+                `$command`;
+            }
         }
     }
 
