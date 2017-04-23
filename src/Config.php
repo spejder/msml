@@ -24,7 +24,22 @@ class Config implements \ArrayAccess
         $yamlParser = new Parser();
 
         $this->config['config'] = $yamlParser->parse(file_get_contents($fileLocator->locate('config.yml')));
+
+        try {
+            $overrideConfig = $fileLocator->locate('config.override.yml');
+            $this->config['config'] = array_merge($this->config['config'], $yamlParser->parse(file_get_contents($overrideConfig)));
+        } catch (\InvalidArgumentException $e) {
+            // Intentionally left blank. We silently ignore missing override file.
+        }
+
         $this->config['lists'] = $yamlParser->parse(file_get_contents($fileLocator->locate('lists.yml')));
+
+        try {
+            $overrideLists = $fileLocator->locate('lists.override.yml');
+            $this->config['lists'] = array_merge($this->config['lists'], $yamlParser->parse(file_get_contents($overrideLists)));
+        } catch (\InvalidArgumentException $e) {
+            // Intentionally left blank. We silently ignore missing override file.
+        }
     }
 
     /**
