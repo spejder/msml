@@ -1,0 +1,21 @@
+{
+    "chmod": "0755",
+    "directories": [
+        "src",
+        "config"
+    ],
+    "files": [
+        "LICENSE"
+    ],
+    "finder": [
+        {
+            "name": "*.php",
+            "exclude": ["Tests"],
+            "in": "vendor"
+        }
+    ],
+    "git-version": "package_version",
+    "main": "msml",
+    "output": "msml.phar",
+    "stub": true
+}

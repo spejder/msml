@@ -34,7 +34,7 @@ use Stecman\Component\Symfony\Console\BashCompletion\CompletionCommand;
 
 use MSML\Command\DefaultCommand;
 
-$application = new Application('msml');
+$application = new Application('msml', '@package_version@');
 $command = new DefaultCommand();
 $completion = new CompletionCommand();
 
