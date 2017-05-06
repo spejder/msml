@@ -17,7 +17,6 @@ class Medlemsservice extends Odoo
 {
     protected $msUrl = 'https://medlem.dds.dk/xmlrpc/2';
     protected $msDatabase = 'ddsprod';
-    protected $msCredentials;
 
     /**
      * Construct Medlemsservice API client.

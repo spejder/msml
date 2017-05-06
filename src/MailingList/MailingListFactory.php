@@ -32,7 +32,9 @@ class MailingListFactory
         }
 
         if (!in_array('MSML\MailingList\MailingListInterface', class_implements($this->class))) {
-            throw new \InvalidArgumentException('Mailing list class, '.$this->class.', does not implement MSML\MailingList\MailingListInterface.');
+            throw new \InvalidArgumentException(
+                'Mailing list class, '.$this->class.', does not implement MSML\MailingList\MailingListInterface.'
+            );
         }
     }
 

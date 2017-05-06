@@ -27,7 +27,10 @@ class Config implements \ArrayAccess
 
         try {
             $overrideConfig = $fileLocator->locate('config.override.yml');
-            $this->config['config'] = array_merge($this->config['config'], $yamlParser->parse(file_get_contents($overrideConfig)));
+            $this->config['config'] = array_merge(
+                $this->config['config'],
+                $yamlParser->parse(file_get_contents($overrideConfig))
+            );
         } catch (\InvalidArgumentException $e) {
             // Intentionally left blank. We silently ignore missing override file.
         }
@@ -36,7 +39,10 @@ class Config implements \ArrayAccess
 
         try {
             $overrideLists = $fileLocator->locate('lists.override.yml');
-            $this->config['lists'] = array_merge($this->config['lists'], $yamlParser->parse(file_get_contents($overrideLists)));
+            $this->config['lists'] = array_merge(
+                $this->config['lists'],
+                $yamlParser->parse(file_get_contents($overrideLists))
+            );
         } catch (\InvalidArgumentException $e) {
             // Intentionally left blank. We silently ignore missing override file.
         }
