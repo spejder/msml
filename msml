@@ -41,5 +41,5 @@ $completion = new CompletionCommand();
 $application->add($completion);
 $application->add($command);
 
-$application->setDefaultCommand($command->getName());
+$application->setDefaultCommand('list');
 $application->run();
