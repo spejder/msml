@@ -1,19 +1,23 @@
-FROM alpine:edge
+FROM composer AS build-env
 
-COPY composer.json msml /opt/msml/
-COPY config/ /opt/msml/config
-COPY src/ /opt/msml/src/
+COPY . /opt/msml/
 
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    apk update && apk upgrade && \
-    apk add composer@testing php5-openssl mlmmj openssh ca-certificates php7@testing php7-json@testing php7-dom@testing  php7-ctype@testing php7-mbstring@testing php7-openssl@testing && \
-    cd /opt/msml && php5 /usr/bin/composer install --prefer-dist --ignore-platform-reqs && \
-    apk del composer php5 php5-openssl && \
-    rm -rf /var/cache/apk/*
+RUN composer global require kherge/box --prefer-dist --update-no-dev
+RUN cd /opt/msml && composer install --prefer-dist --no-dev
+
+RUN echo "phar.readonly=false" > "$PHP_INI_DIR/conf.d/phar-not-readonly.ini"
+RUN cd /opt/msml && /composer/vendor/bin/box build -v --no-interaction
+
+FROM php:7-alpine
+
+COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
+
+RUN apk add --update tini mlmmj && rm -rf /var/cache/apk/*
 
 WORKDIR /workdir
-VOLUME ["/workdir", "/var/spool/mlmmh"]
+VOLUME ["/workdir", "/var/spool/mlmmj"]
 
 LABEL io.whalebrew.config.volumes '["/var/spool/mlmmj:/var/spool/mlmmj"]'
+LABEL io.whalebrew.config.working_dir '$PWD'
 
-ENTRYPOINT ["/opt/msml/msml"]
+ENTRYPOINT ["/sbin/tini", "--", "php", "/opt/msml/msml.phar"]
