@@ -4,6 +4,7 @@ namespace MSML;
 
 use Symfony\Component\Yaml\Yaml;
 use Jsg\Odoo\Odoo;
+use Fduch\Netrc\Netrc;
 
 /**
  * Medlemsservice.
@@ -15,8 +16,9 @@ use Jsg\Odoo\Odoo;
  */
 class Medlemsservice extends Odoo
 {
-    protected $msUrl = 'https://medlem.dds.dk/xmlrpc/2';
+    protected $msHost = 'medlem.dds.dk';
     protected $msDatabase = 'ddsprod';
+    protected $msUrl;
 
     /**
      * Construct Medlemsservice API client.
@@ -24,14 +26,47 @@ class Medlemsservice extends Odoo
      * Load credentials and call parent with right arguments.
      *
      * @param MSML\Config $config Configuration object
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function __construct(Config $config)
     {
+        $this->msUrl = "https://{$this->msHost}/xmlrpc/2";
+
+        // First we try to locate credentials in ~/.netrc
+        try {
+            $netrc = Netrc::parse();
+
+            if (!empty($netrc[$this->msHost]['login'])) {
+                $user = $netrc[$this->msHost]['login'];
+            }
+
+            if (!empty($netrc[$this->msHost]['password'])) {
+                $password = $netrc[$this->msHost]['password'];
+            }
+        }
+        catch (\Exception $e) {
+            // Nothing.
+        }
+
+        // If credentials are present in the config use them instead.
+        if (!empty($config['config']['credentials']['user'])) {
+            $user = $config['config']['credentials']['user'];
+        }
+
+        if (!empty($config['config']['credentials']['password'])) {
+            $password = $config['config']['credentials']['password'];
+        }
+
+        if (empty($user) || empty($password)) {
+            throw new \RuntimeException('Unable to find credentials.');
+        }
+
         parent::__construct(
             $this->msUrl,
             $this->msDatabase,
-            (string) $config['config']['credentials']['user'],
-            (string) $config['config']['credentials']['password']
+            (string) $user,
+            (string) $password
         );
     }
 

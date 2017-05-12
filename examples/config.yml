@@ -5,6 +5,9 @@ credentials:
   user: 123456
   password: correcthorsebatterystaple
 
+# Credentials can also be specified in ~/.netrc:
+# machine medlem.dds.dk login 123456 password correcthorsebatterystaple
+
 mlmmj:
   # Sudo, ssh, whatever to get to the /usr/bin/mlmmj-* binaries (remember trailing space):
   command_prefix: 'ssh mail.example.net '
