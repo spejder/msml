@@ -44,8 +44,7 @@ class Medlemsservice extends Odoo
             if (!empty($netrc[$this->msHost]['password'])) {
                 $password = $netrc[$this->msHost]['password'];
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             // Nothing.
         }
 
