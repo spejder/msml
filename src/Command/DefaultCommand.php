@@ -97,6 +97,10 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $selectedLists = $input->getArgument('list');
         $this->config['dry-run'] = $input->getOption('dry-run');
 
+        if (empty($lists)) {
+            throw new \RuntimeException('No lists configured.');
+        }
+
         // If some lists added on command line limit sync to those
         // lists.
         if (!empty($selectedLists)) {
