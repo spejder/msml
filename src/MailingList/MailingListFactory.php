@@ -10,7 +10,7 @@ use MSML\Config;
  */
 class MailingListFactory
 {
-    protected $class = 'MlmmjList';
+    protected $class = 'Mlmmj';
 
     /**
      * Construct the factory.
