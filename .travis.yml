@@ -8,7 +8,7 @@ install:
 script:
 - true
 after_success:
-- ~/.composer/vendor/bin/box build -v --no-interaction
+- ~/.composer/vendor/bin/box build --no-interaction
 deploy:
   skip_cleanup: true
   provider: releases
