@@ -13,6 +13,8 @@ engines:
     enabled: true
     config:
       standard: PSR2
+  markdownlint:
+    enabled: true
 ratings:
   paths:
   - "**.inc"
