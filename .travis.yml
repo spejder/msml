@@ -2,9 +2,9 @@ language: php
 php:
 - '7.0'
 before_install:
-- composer global require kherge/box --prefer-source
+- composer global require kherge/box --prefer-dist
 install:
-- composer install
+- composer install --prefer-dist
 script:
 - true
 after_success:
