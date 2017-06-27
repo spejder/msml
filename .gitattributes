@@ -6,3 +6,7 @@
 /box.json export-ignore
 /examples export-ignore
 /phpcs.xml export-ignore
+/phpunit.xml export-ignore
+/tests export-ignore
+
+/examples linguist-documentation

@@ -1,13 +1,13 @@
 language: php
 php:
 - '7.0'
-before_install:
-- composer global require kherge/box --prefer-dist
+- '7.1'
+- nightly
 install:
 - composer install --prefer-dist
-script:
-- true
 after_success:
+- composer global require kherge/box --prefer-dist
+- composer install --no-dev
 - ~/.composer/vendor/bin/box build --no-interaction
 deploy:
   skip_cleanup: true
@@ -18,3 +18,4 @@ deploy:
   on:
     repo: spejder/msml
     tags: true
+    php: '7.0'
