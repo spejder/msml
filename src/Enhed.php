@@ -187,18 +187,18 @@ class Enhed
         $fields = ['leader_ids'];
         $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
 
-        // Lookup profile IDs from Leaders IDs.
+        // Lookup member IDs from Leaders IDs.
         $criteria = [
             ['id', '=', $leaderIds[0]['leader_ids']],
         ];
         $functionIds = $this->odooClient->search('member.function', $criteria);
 
-        $fields = ['profile_id'];
+        $fields = ['member_id'];
         $leaders = $this->odooClient->read('member.function', $functionIds, $fields);
 
-        // Only keep the profile ID.
+        // Only keep the member ID.
         $this->leaders = array_map(function ($leader) {
-            return $leader['profile_id'][0];
+            return $leader['member_id'][0];
         }, $leaders);
     }
 
@@ -213,13 +213,13 @@ class Enhed
             ['organization_id', '=', $this->organizationCode],
             ['function_type_id.leader_function', '=', true],
         ];
-        $fields = ['profile_id'];
-        $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
+        $fields = ['member_id'];
+        $members = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
-        // Only keep the profile ID.
-        $this->leaderlist = array_map(function ($profile) {
-            return $profile['profile_id'][0];
-        }, $profiles);
+        // Only keep the member ID.
+        $this->leaderlist = array_map(function ($member) {
+            return $member['member_id'][0];
+        }, $members);
     }
 
     /**
@@ -233,13 +233,13 @@ class Enhed
             ['function_type_id', '!=', self::GRUPPEREVISOR],
             ['function_type_id', '!=', self::GRUPPEREVISORSUPPLEANT],
         ];
-        $fields = ['profile_id'];
-        $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
+        $fields = ['member_id'];
+        $members = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
-        // Only keep the profile ID.
-        $this->board = array_map(function ($profile) {
-            return $profile['profile_id'][0];
-        }, $profiles);
+        // Only keep the member ID.
+        $this->board = array_map(function ($member) {
+            return $member['member_id'][0];
+        }, $members);
     }
 
     /**
@@ -251,13 +251,13 @@ class Enhed
             ['organization_id', 'child_of', $this->organizationCode],
             ['function_type_id', '=', self::WEBANSVARLIG],
         ];
-        $fields = ['profile_id'];
-        $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
+        $fields = ['member_id'];
+        $members = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
-        // Only keep the profile ID.
-        $this->webmaster = array_map(function ($profile) {
-            return $profile['profile_id'][0];
-        }, $profiles);
+        // Only keep the member ID.
+        $this->webmaster = array_map(function ($member) {
+            return $member['member_id'][0];
+        }, $members);
     }
 
     /**
@@ -270,10 +270,15 @@ class Enhed
         // ledere) jvf medlemssystemet
         $criteria = [
             ['member_id.function_ids.organization_id', 'child_of', $this->organizationCode],
-            ['state', '=', 'active'],
             ['member_id.function_ids.leader_function', '!=', true],
         ];
-        $this->members = $this->odooClient->search('member.profile', $criteria);
+        $fields = ['member_id'];
+        $members = $this->odooClient->searchRead('member.member', $criteria, $fields);
+
+        // Only keep the member ID.
+        $this->members = array_map(function ($member) {
+            return $member['member_id'][0];
+        }, $members);
     }
 
     /**
@@ -288,23 +293,17 @@ class Enhed
         $functions = $this->odooClient->read('member.function', $leaderIds[0]['leader_ids'], $fields);
 
         foreach ($functions as $function) {
-            $criteria = [
-                ['member_id', '=', $function['member_id'][0]],
-            ];
-            $fields = ['id'];
-            $profileId = $this->odooClient->searchRead('member.profile', $criteria, $fields);
-
             switch ($function['function_type_id'][0]) {
                 case self::BESTYRELSESFORMAND:
-                    $this->bestyrelsesformand[] = $profileId[0]['id'];
+                    $this->bestyrelsesformand[] = $function['member_id'][0];
                     break;
 
                 case self::GRUPPELEDER:
-                    $this->gruppeleder[] = $profileId[0]['id'];
+                    $this->gruppeleder[] = $function['member_id'][0];
                     break;
 
                 case self::GRUPPEKASSERER:
-                    $this->gruppekasserer[] = $profileId[0]['id'];
+                    $this->gruppekasserer[] = $function['member_id'][0];
                     break;
             }
         }

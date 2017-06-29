@@ -11,11 +11,10 @@ class Profile
 {
     protected $odooClient;
     protected $profiles;
-    protected $profileId;
+    protected $memberId;
 
     protected $name;
     protected $mail;
-    protected $memberId;
     protected $relationPartnerIds;
     protected $relationProfileIds;
 
@@ -27,17 +26,16 @@ class Profile
      *
      * @param Odoo     $odooClient The Odoo Client to use for later lookups.
      * @param Profiles $profiles   The profiles storage.
-     * @param int      $profileId  The organization code.
+     * @param int      $memberId  The organization code.
      */
-    public function __construct(Odoo $odooClient, Profiles $profiles, int $profileId)
+    public function __construct(Odoo $odooClient, Profiles $profiles, int $memberId)
     {
         $this->odooClient = $odooClient;
         $this->profiles = $profiles;
-        $this->profileId = $profileId;
+        $this->memberId = $memberId;
 
         $this->name = null;
         $this->mail = null;
-        $this->memberId = null;
         $this->relationPartnerIds = [];
         $this->relationProfileIds = [];
     }
@@ -65,8 +63,8 @@ class Profile
     {
         $this->expandRelations();
         $result = [];
-        foreach ($this->relationProfileIds as $profileId) {
-            $result[] = $this->profiles->getById($profileId)->getMail();
+        foreach ($this->relationProfileIds as $memberId) {
+            $result[] = $this->profiles->getById($memberId)->getMail();
         }
 
         return array_filter($result);
@@ -78,12 +76,11 @@ class Profile
     protected function extractProfile()
     {
         $fields = ['name', 'email', 'member_number', 'relation_all_ids'];
-        $profile = $this->odooClient->read('member.profile', $this->profileId, $fields);
+        $member = $this->odooClient->read('member.member', $this->memberId, $fields);
 
-        $this->name = trim($profile['name']);
-        $this->mail = trim($profile['email']);
-        $this->memberId = trim($profile['member_number']);
-        $this->relationPartnerIds = $profile['relation_all_ids'];
+        $this->name = trim($member['name']);
+        $this->mail = trim($member['email']);
+        $this->relationPartnerIds = $member['relation_all_ids'];
     }
 
     /**
@@ -112,8 +109,8 @@ class Profile
                 $criteria = [
                     ['partner_id', '=', $relation['other_partner_id'][0]],
                 ];
-                $profile = $this->odooClient->search('member.profile', $criteria);
-                $this->relationProfileIds[] = reset($profile);
+                $member = $this->odooClient->search('member.member', $criteria);
+                $this->relationProfileIds[] = reset($member);
             }
         }
     }
