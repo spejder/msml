@@ -67,6 +67,10 @@ class Medlemsservice extends Odoo
             (string) $user,
             (string) $password
         );
+
+        if (!empty($config['config']['odoo']['client_optione'])) {
+            $this->httpOptions = $config['config']['odoo']['client_options'];
+        }
     }
 
     /**
