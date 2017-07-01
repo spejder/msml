@@ -5,6 +5,7 @@ namespace MSML;
 use Symfony\Component\Yaml\Yaml;
 use Jsg\Odoo\Odoo;
 use Fduch\Netrc\Netrc;
+use Zend\Http\Client as HttpClient;
 
 /**
  * Medlemsservice.
@@ -61,16 +62,18 @@ class Medlemsservice extends Odoo
             throw new \RuntimeException('Unable to find credentials.');
         }
 
+        $httpClient = new HttpClient();
+        if (!empty($config['config']['odoo']['client_options'])) {
+            $httpClient->setOptions($config['config']['odoo']['client_options']);
+        }
+
         parent::__construct(
             $this->msUrl,
             $this->msDatabase,
             (string) $user,
-            (string) $password
+            (string) $password,
+            $httpClient
         );
-
-        if (!empty($config['config']['odoo']['client_options'])) {
-            $this->httpOptions = $config['config']['odoo']['client_options'];
-        }
     }
 
     /**
