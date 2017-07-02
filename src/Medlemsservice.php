@@ -20,6 +20,7 @@ class Medlemsservice extends Odoo
     protected $msHost = 'medlem.dds.dk';
     protected $msDatabase = 'ddsprod';
     protected $msUrl;
+    protected $config;
 
     /**
      * Construct Medlemsservice API client.
@@ -32,6 +33,7 @@ class Medlemsservice extends Odoo
      */
     public function __construct(Config $config)
     {
+        $this->config = $config;
         $this->msUrl = "https://{$this->msHost}/xmlrpc/2";
 
         // First we try to locate credentials in ~/.netrc
@@ -81,8 +83,8 @@ class Medlemsservice extends Odoo
     protected function getClient($path = null)
     {
         $this->httpClient = new HttpClient();
-        if (!empty($config['config']['odoo']['client_options'])) {
-            $this->httpClient->setOptions($config['config']['odoo']['client_options']);
+        if (!empty($this->config['config']['odoo']['client_options'])) {
+            $this->httpClient->setOptions($this->config['config']['odoo']['client_options']);
         }
 
         return parent::getClient($path);
