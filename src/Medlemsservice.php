@@ -62,18 +62,30 @@ class Medlemsservice extends Odoo
             throw new \RuntimeException('Unable to find credentials.');
         }
 
-        $httpClient = new HttpClient();
-        if (!empty($config['config']['odoo']['client_options'])) {
-            $httpClient->setOptions($config['config']['odoo']['client_options']);
-        }
-
         parent::__construct(
             $this->msUrl,
             $this->msDatabase,
             (string) $user,
-            (string) $password,
-            $httpClient
+            (string) $password
         );
+    }
+
+    /**
+     * Get XmlRpc Client
+     *
+     * Create a HTTP Client and set the timeout before getting the
+     * client from our parent (Odoo).
+     *
+     * {@inheritDoc}
+     */
+    protected function getClient($path = null)
+    {
+        $this->httpClient = new HttpClient();
+        if (!empty($config['config']['odoo']['client_options'])) {
+            $this->httpClient->setOptions($config['config']['odoo']['client_options']);
+        }
+
+        return parent::getClient($path);
     }
 
     /**
