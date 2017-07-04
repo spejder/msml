@@ -10,12 +10,20 @@ after_success:
 - composer install --no-dev
 - ~/.composer/vendor/bin/box build --no-interaction
 deploy:
-  skip_cleanup: true
-  provider: releases
-  api_key:
-    secure: VXXaMOe9ElZr+QRqUrLvNYevjGxIUTT9pPLDiZqIaeoZ6TT4KHUh6QypHfh7aFFyU9wcve2jVpqH0S7IRNmL2k+9VxIl2oUW4154C06cKpI0zAX7/yYojYqUzRjIXk9FSXQgToTevdMaP3gbQ5g37oeUImBd5actgZWN2uQi55k7s6MQRwmGhFsttaF+bfmTOtLOkgh6smUs6S2gEfOqqU4ItQQwotj/fzhdCPAWN1soWGT9LArd3jqTQGX2IuY8KrIt9FCeEi7jukpaC9c6Xe18gS+2+kQd2UfuvLG2PUlFSilRgC8+ShIch/8Jeza4B4O/wq2K/LX4JsVYF9IYpQDNCqJxo9U6gLkECMVTR0AwQinDTlII/NUaXB59aJR3hIt3S651oQYvitMSSFO/Lacf47d8qj6mtinFazzyjulVbTS0Djg6jYfPkgCjyqtUCup37pe7Ok7az5kOUHmQNz2Nzu8xSYtxSsSfoja/8co9JKUnT3s1JLMa1KRTJqmRbcSCrfuevS72XabHhJfKTLxhXCkSbU56ovxYvbESiK28VUzcr5ZCSxKzX19StnuqGlFdLbu6NckVH6LTVNjb1FyynlqRUZAje58ntoGUUVMFy51NIFsBKYJ08zHsNcK/d0NUfX0VGmuhuSE8rZvXjFe0GlQKSYPI+R5SMjTBKqk=
-  file: msml.phar
-  on:
-    repo: spejder/msml
-    tags: true
-    php: '7.0'
+  # Deploy to Github Releases
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: VXXaMOe9ElZr+QRqUrLvNYevjGxIUTT9pPLDiZqIaeoZ6TT4KHUh6QypHfh7aFFyU9wcve2jVpqH0S7IRNmL2k+9VxIl2oUW4154C06cKpI0zAX7/yYojYqUzRjIXk9FSXQgToTevdMaP3gbQ5g37oeUImBd5actgZWN2uQi55k7s6MQRwmGhFsttaF+bfmTOtLOkgh6smUs6S2gEfOqqU4ItQQwotj/fzhdCPAWN1soWGT9LArd3jqTQGX2IuY8KrIt9FCeEi7jukpaC9c6Xe18gS+2+kQd2UfuvLG2PUlFSilRgC8+ShIch/8Jeza4B4O/wq2K/LX4JsVYF9IYpQDNCqJxo9U6gLkECMVTR0AwQinDTlII/NUaXB59aJR3hIt3S651oQYvitMSSFO/Lacf47d8qj6mtinFazzyjulVbTS0Djg6jYfPkgCjyqtUCup37pe7Ok7az5kOUHmQNz2Nzu8xSYtxSsSfoja/8co9JKUnT3s1JLMa1KRTJqmRbcSCrfuevS72XabHhJfKTLxhXCkSbU56ovxYvbESiK28VUzcr5ZCSxKzX19StnuqGlFdLbu6NckVH6LTVNjb1FyynlqRUZAje58ntoGUUVMFy51NIFsBKYJ08zHsNcK/d0NUfX0VGmuhuSE8rZvXjFe0GlQKSYPI+R5SMjTBKqk=
+    file: msml.phar
+    on:
+      repo: spejder/msml
+      tags: true
+      php: '7.0'
+  # Purge the releases badge to get the new release number in there
+  - provider: script
+    script: curl --silent -X PURGE https://camo.githubusercontent.com/629b33942e20acc0de5bf90146c115c8d948ee25/68747470733a2f2f6769746875622d72656c656173652d76657273696f6e2e6865726f6b756170702e636f6d2f6769746875622f7370656a6465722f6d736d6c2f72656c656173652e737667
+    on:
+      repo: spejder/msml
+      tags: true
+      php: '7.0'
