@@ -15,7 +15,6 @@ class Profile
 
     protected $name;
     protected $mail;
-    protected $memberId;
     protected $relationPartnerIds;
     protected $relationProfileIds;
 
@@ -37,7 +36,6 @@ class Profile
 
         $this->name = null;
         $this->mail = null;
-        $this->memberId = null;
         $this->relationPartnerIds = [];
         $this->relationProfileIds = [];
     }
@@ -82,7 +80,6 @@ class Profile
 
         $this->name = trim($profile['name']);
         $this->mail = trim($profile['email']);
-        $this->memberId = trim($profile['member_number']);
         $this->relationPartnerIds = $profile['relation_all_ids'];
     }
 
