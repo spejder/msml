@@ -24,37 +24,37 @@ class Profiles
     }
 
     /**
-     * Get a profile by member ID.
+     * Get a profile by ID.
      *
-     * @param int $memberId The member ID to lookup by.
+     * @param int $profileId The profile ID to lookup by.
      *
      * @return Profile
      */
-    public function getById(int $memberId)
+    public function getById(int $profileId)
     {
         // Preferably use a cached profile. Otherwise look in Odoo.
-        if (empty($this->collection[$memberId])) {
-            $this->requestProfile($memberId);
+        if (empty($this->collection[$profileId])) {
+            $this->requestProfile($profileId);
         }
 
-        return $this->collection[$memberId];
+        return $this->collection[$profileId];
     }
 
     /**
-     * Lookup a profile by it's member ID from Odoo.
+     * Lookup a profile by it's ID from Odoo.
      *
-     * @param int $memberId The member ID to lookup by.
+     * @param int $profileId The profile ID to lookup by.
      */
-    protected function requestProfile(int $memberId)
+    protected function requestProfile(int $profileId)
     {
-        $profiles = $this->odooClient->search('member.member', [['id', '=', $memberId]]);
+        $profiles = $this->odooClient->search('member.profile', [['id', '=', $profileId]]);
 
-        if (empty($memberId)) {
-            $this->collection[$memberId] = null;
+        if (empty($profileId)) {
+            $this->collection[$profileId] = null;
 
             return;
         }
 
-        $this->collection[$memberId] = new Profile($this->odooClient, $this, reset($profiles));
+        $this->collection[$profileId] = new Profile($this->odooClient, $this, reset($profiles));
     }
 }

@@ -119,16 +119,16 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             foreach ($list['select'] as $conf) {
                 $enhed = $enheder->getById($conf['org']);
 
-                $memberIds = call_user_func([$enhed, 'get'.ucfirst($conf['type'])]);
+                $profileIds = call_user_func([$enhed, 'get'.ucfirst($conf['type'])]);
 
                 // If type is members we need to filter out leaders.
                 if ('members' == $conf['type']) {
                     $leaders = $enhed->getLeaders();
-                    $memberIds = array_diff($memberIds, $leaders);
+                    $profileIds = array_diff($profileIds, $leaders);
                 }
 
-                $mails = array_map(function ($memberId) use ($profiles, $conf) {
-                    $profile = $profiles->getById($memberId);
+                $mails = array_map(function ($profileId) use ($profiles, $conf) {
+                    $profile = $profiles->getById($profileId);
                     $mail = $profile->getMail();
 
                     if (empty($conf['relatives'])) {
@@ -138,7 +138,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                     $relmails = $profile->getRelationMails();
 
                     return array_filter(array_merge($relmails, [$mail]));
-                }, $memberIds);
+                }, $profileIds);
 
                 if (!empty($mails)) {
                     $mails = call_user_func_array('array_merge', $mails);
