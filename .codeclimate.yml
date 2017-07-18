@@ -15,6 +15,8 @@ engines:
       standard: PSR2
   markdownlint:
     enabled: true
+  git-legal:
+    enabled: true
 ratings:
   paths:
   - "**.inc"
