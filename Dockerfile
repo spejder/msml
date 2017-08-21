@@ -1,12 +1,12 @@
 FROM composer AS build-env
 
+RUN echo "phar.readonly=false" > "$PHP_INI_DIR/conf.d/phar-not-readonly.ini"
+RUN composer global require kherge/box --prefer-dist --update-no-dev
+
 COPY . /opt/msml/
 
-RUN composer global require kherge/box --prefer-dist --update-no-dev
 RUN cd /opt/msml && composer install --prefer-dist --no-dev
-
-RUN echo "phar.readonly=false" > "$PHP_INI_DIR/conf.d/phar-not-readonly.ini"
-RUN cd /opt/msml && /composer/vendor/bin/box build -v --no-interaction
+RUN cd /opt/msml && /tmp/vendor/bin/box build -v --no-interaction
 
 FROM php:7-alpine
 
