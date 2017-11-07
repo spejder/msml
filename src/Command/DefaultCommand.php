@@ -117,7 +117,11 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             }
 
             foreach ($list['select'] as $conf) {
-                $enhed = $enheder->getById($conf['org']);
+                if (!empty($conf['org'])) {
+                    $enhed = $enheder->getByOrganizationCode($conf['org']);
+                } else {
+                    $enhed = $enheder->getById($conf['id']);
+                }
 
                 $profileIds = call_user_func([$enhed, 'get'.ucfirst($conf['type'])]);
 
