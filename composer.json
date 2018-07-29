@@ -10,7 +10,7 @@
         "symfony/dependency-injection": "^3.2",
         "symfony/config": "^3.2",
         "symfony/console": "^3.2",
-        "stecman/symfony-console-completion": "^0.7.0",
+        "stecman/symfony-console-completion": "^0.8.0",
         "fduch/netrc": "^1.0"
     },
     "autoload": {
