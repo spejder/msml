@@ -7,7 +7,7 @@
         "php": ">=7.0.0",
         "jacobsteringa/odoo-client": "^0.3",
         "symfony/yaml": "^4.1",
-        "symfony/dependency-injection": "^3.2",
+        "symfony/dependency-injection": "^4.1",
         "symfony/config": "^4.1",
         "symfony/console": "^3.2",
         "stecman/symfony-console-completion": "^0.8.0",
