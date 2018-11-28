@@ -11,7 +11,8 @@
         "symfony/config": "^4.1",
         "symfony/console": "^3.2",
         "stecman/symfony-console-completion": "^0.8.0",
-        "fduch/netrc": "^1.0"
+        "fduch/netrc": "^1.0",
+        "zendframework/zend-http": "^2.8 >=2.8.1"
     },
     "autoload": {
         "psr-4": {
