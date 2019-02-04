@@ -1,8 +1,8 @@
 language: php
 
 php:
-- '7.1'
 - '7.2'
+- '7.3'
 - nightly
 
 install:
@@ -23,7 +23,7 @@ deploy:
     on:
       repo: spejder/msml
       tags: true
-      php: '7.0'
+      php: '7.2'
 
   # Purge the releases badge to get the new release number in there
   - provider: script
@@ -31,4 +31,4 @@ deploy:
     on:
       repo: spejder/msml
       tags: true
-      php: '7.0'
+      php: '7.2'
