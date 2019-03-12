@@ -1,18 +1,19 @@
-FROM composer AS build-env
+FROM composer:1.8 AS build-env
 
-RUN echo "phar.readonly=false" > "$PHP_INI_DIR/conf.d/phar-not-readonly.ini"
-RUN composer global require kherge/box --prefer-dist --update-no-dev
+RUN composer global require humbug/box:^3.5 --prefer-dist --update-no-dev
 
 COPY . /opt/msml/
 
-RUN cd /opt/msml && composer install --prefer-dist --no-dev
-RUN cd /opt/msml && /tmp/vendor/bin/box build -v --no-interaction
+WORKDIR /opt/msml
+
+RUN composer install --prefer-dist --no-dev
+RUN /tmp/vendor/bin/box build -v --no-interaction
 
 FROM php:7-alpine
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
-RUN apk add --update tini mlmmj && rm -rf /var/cache/apk/*
+RUN apk add --no-cache tini=~0.18 mlmmj=~1.3
 
 WORKDIR /workdir
 VOLUME ["/workdir", "/var/spool/mlmmj"]

@@ -12,7 +12,7 @@
             "name": "*.php",
             "exclude": [
                 "Tests",
-                "kherge",
+                "humbug",
                 "squizlabs"
             ],
             "in": "vendor"

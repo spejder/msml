@@ -5,11 +5,15 @@ php:
 - '7.3'
 - nightly
 
+matrix:
+  allow_failures:
+    - php: nightly
+
 install:
 - composer install --prefer-dist
 
 after_success:
-- composer global require kherge/box --prefer-dist
+- composer global require humbug/box:^3.5 --prefer-dist
 - composer install --no-dev
 - ~/.composer/vendor/bin/box build --no-interaction
 
