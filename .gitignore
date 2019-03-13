@@ -1,3 +1,4 @@
-composer.lock
-vendor
-msml.phar
+/composer.lock
+/vendor
+/msml.phar
+/.phpunit.result.cache
