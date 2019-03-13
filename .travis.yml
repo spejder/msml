@@ -31,6 +31,7 @@ deploy:
 
   # Purge the releases badge to get the new release number in there
   - provider: script
+    skip_cleanup: true
     script: curl --silent -X PURGE https://camo.githubusercontent.com/629b33942e20acc0de5bf90146c115c8d948ee25/68747470733a2f2f6769746875622d72656c656173652d76657273696f6e2e6865726f6b756170702e636f6d2f6769746875622f7370656a6465722f6d736d6c2f72656c656173652e737667
     on:
       repo: spejder/msml
