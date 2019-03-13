@@ -3,7 +3,7 @@
          colors="true"
          stopOnFailure="false">
     <testsuites>
-        <testsuite>
+        <testsuite name="spejder/msml">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
