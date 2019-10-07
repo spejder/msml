@@ -41,17 +41,17 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         $folders = [];
 
         if (!empty($domain)) {
-            $folders[] = '/var/spool/mlmmj/'.$domain.'/'.$address;
-            $folders[] = '/var/spool/mlmmj/'.$address.'@'.$domain;
+            $folders[] = '/var/spool/mlmmj/' . $domain . '/' . $address;
+            $folders[] = '/var/spool/mlmmj/' . $address . '@' . $domain;
         }
 
-        $folders[] = '/var/spool/mlmmj/'.$address;
+        $folders[] = '/var/spool/mlmmj/' . $address;
 
         foreach ($folders as $folder) {
-            $command = $this->commandPrefix.'test -d '.$folder.' -a -r '.$folder.'';
+            $command = $this->commandPrefix . 'test -d ' . $folder . ' -a -r ' . $folder . '';
 
             if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
-                $this->output->writeln('Executing commmand: '.$command);
+                $this->output->writeln('Executing commmand: ' . $command);
             }
 
             system($command, $returnValue);
@@ -63,7 +63,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             }
         }
 
-        throw new \RuntimeException('List '.$listName.' not found.');
+        throw new \RuntimeException('List ' . $listName . ' not found.');
     }
 
     /**
@@ -74,7 +74,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         $command = $this->mlmmjCommand('list');
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
-            $this->output->writeln('Executing commmand: '.$command);
+            $this->output->writeln('Executing commmand: ' . $command);
         }
 
         $subscribers = `$command`;
@@ -97,7 +97,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             $command = $this->mlmmjCommand('unsub', ['-a', $unsubscribe]);
 
             if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
-                $this->output->writeln('Executing commmand: '.$command);
+                $this->output->writeln('Executing commmand: ' . $command);
             }
 
             if (!$this->config['dry-run']) {
@@ -115,7 +115,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             $command = $this->mlmmjCommand('sub', ['-a', $subscribe]);
 
             if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
-                $this->output->writeln('Executing commmand: '.$command);
+                $this->output->writeln('Executing commmand: ' . $command);
             }
 
             if (!$this->config['dry-run']) {

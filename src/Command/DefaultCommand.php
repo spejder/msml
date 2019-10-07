@@ -7,13 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-
 use Stecman\Component\Symfony\Console\BashCompletion\Completion\CompletionAwareInterface;
 use Stecman\Component\Symfony\Console\BashCompletion\CompletionContext;
 
@@ -32,7 +30,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
     {
         parent::__construct();
 
-        $fileLocator = new FileLocator(['.', './config', __DIR__.'/../../config']);
+        $fileLocator = new FileLocator(['.', './config', __DIR__ . '/../../config']);
 
         $this->container = new ContainerBuilder();
         $loader = new YamlFileLoader($this->container, $fileLocator);
@@ -123,7 +121,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                     $enhed = $enheder->getById($conf['id']);
                 }
 
-                $profileIds = call_user_func([$enhed, 'get'.ucfirst($conf['type'])]);
+                $profileIds = call_user_func([$enhed, 'get' . ucfirst($conf['type'])]);
 
                 // If type is members we need to filter out leaders.
                 if ('members' == $conf['type']) {

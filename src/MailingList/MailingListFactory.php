@@ -24,16 +24,16 @@ class MailingListFactory
         };
 
         if (!class_exists($this->class)) {
-            if (!class_exists('MSML\\MailingList\\'.$this->class)) {
-                throw new \InvalidArgumentException('Unknown mailing list class: '.$this->class);
+            if (!class_exists('MSML\\MailingList\\' . $this->class)) {
+                throw new \InvalidArgumentException('Unknown mailing list class: ' . $this->class);
             }
 
-            $this->class = 'MSML\\MailingList\\'.$this->class;
+            $this->class = 'MSML\\MailingList\\' . $this->class;
         }
 
         if (!in_array('MSML\MailingList\MailingListInterface', class_implements($this->class))) {
             throw new \InvalidArgumentException(
-                'Mailing list class, '.$this->class.', does not implement MSML\MailingList\MailingListInterface.'
+                'Mailing list class, ' . $this->class . ', does not implement MSML\MailingList\MailingListInterface.'
             );
         }
     }
