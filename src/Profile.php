@@ -19,7 +19,7 @@ class Profile
     protected $relationProfileIds;
 
     // Hard coded medlemssystem value.
-    const TYPE_CHILD_OF = 11;
+    protected const TYPE_CHILD_OF = 11;
 
     /**
      * Construct but lazy load most stuff.

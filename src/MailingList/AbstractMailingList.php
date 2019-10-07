@@ -40,19 +40,19 @@ abstract class AbstractMailingList implements MailingListInterface
         $this->currentSubscribers();
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
-            $this->output->writeln('Current Subscribers: '.var_export($this->currentSubscribers, true));
+            $this->output->writeln('Current Subscribers: ' . var_export($this->currentSubscribers, true));
         }
 
         $unsubscribers = array_diff($this->currentSubscribers, $this->addresses);
         $subscribers = array_diff($this->addresses, $this->currentSubscribers);
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $this->output->writeln('Unsubscribing: '.var_export($unsubscribers, true));
+            $this->output->writeln('Unsubscribing: ' . var_export($unsubscribers, true));
         }
         $this->unsubscribe($unsubscribers);
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
-            $this->output->writeln('Subscribing: '.var_export($subscribers, true));
+            $this->output->writeln('Subscribing: ' . var_export($subscribers, true));
         }
         $this->subscribe($subscribers);
     }

@@ -25,14 +25,14 @@ class Enhed
     protected $webmaster;
 
 
-    const BESTYRELSESFORMAND = 233;
-    const GRUPPELEDER = 234;
-    const GRUPPEKASSERER = 285;
+    protected const BESTYRELSESFORMAND = 233;
+    protected const GRUPPELEDER = 234;
+    protected const GRUPPEKASSERER = 285;
 
-    const GRUPPEREVISOR = 305;
-    const GRUPPEREVISORSUPPLEANT = 248;
+    protected const GRUPPEREVISOR = 305;
+    protected const GRUPPEREVISORSUPPLEANT = 248;
 
-    const WEBANSVARLIG = 275;
+    protected const WEBANSVARLIG = 275;
 
 
     /**
