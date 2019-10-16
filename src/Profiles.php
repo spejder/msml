@@ -30,7 +30,7 @@ class Profiles
      *
      * @return Profile
      */
-    public function getById(int $profileId)
+    public function getById(int $profileId): Profile
     {
         // Preferably use a cached profile. Otherwise look in Odoo.
         if (empty($this->collection[$profileId])) {

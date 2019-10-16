@@ -24,25 +24,67 @@ class Config implements \ArrayAccess
         $yamlParser = new Parser();
 
         try {
-            $this->config['config'] = $yamlParser->parse(file_get_contents($fileLocator->locate('config.yml')));
+            $configFile = $fileLocator->locate('config.yml');
 
-            $overrideConfig = $fileLocator->locate('config.override.yml');
-            $this->config['config'] = array_merge(
-                $this->config['config'],
-                $yamlParser->parse(file_get_contents($overrideConfig))
-            );
+            if (is_array($configFile)) {
+                $configFile = reset($configFile);
+            }
+
+            $configFileContent = file_get_contents($configFile);
+
+            if (!is_string($configFileContent)) {
+                throw new \RuntimeException('Could not locate or read config.yml');
+            }
+
+            $this->config['config'] = $yamlParser->parse($configFileContent);
+
+            $overrideConfigFile = $fileLocator->locate('config.override.yml');
+
+            if (is_array($overrideConfigFile)) {
+                $overrideConfigFile = reset($overrideConfigFile);
+            }
+
+            $overrideConfigFileContent = file_get_contents($overrideConfigFile);
+
+            if (is_string($overrideConfigFileContent)) {
+                $this->config['config'] = array_merge(
+                    $this->config['config'],
+                    $yamlParser->parse($overrideConfigFileContent)
+                );
+            }
         } catch (\InvalidArgumentException $e) {
             // Intentionally left blank. We silently ignore missing override file.
         }
 
         try {
-            $this->config['lists'] = $yamlParser->parse(file_get_contents($fileLocator->locate('lists.yml')));
+            $listsFile = $fileLocator->locate('lists.yml');
 
-            $overrideLists = $fileLocator->locate('lists.override.yml');
-            $this->config['lists'] = array_merge(
-                $this->config['lists'],
-                $yamlParser->parse(file_get_contents($overrideLists))
-            );
+            if (is_array($listsFile)) {
+                $listsFile = reset($listsFile);
+            }
+
+            $listsFileContent = file_get_contents($listsFile);
+
+            if (!is_string($listsFileContent)) {
+                throw new \RuntimeException('Could not locate or read list.yml');
+            }
+
+            $this->config['lists'] = $yamlParser->parse($listsFileContent);
+
+            $overrideListsFile = $fileLocator->locate('lists.override.yml');
+
+            if (is_array($overrideListsFile)) {
+                $overrideListsFile = reset($overrideListsFile);
+            }
+
+            $overrideListsFileContent = file_get_contents($overrideListsFile);
+
+            if (is_string($overrideListsFileContent)) {
+                $this->config['lists'] = array_merge(
+                    $this->config['lists'],
+                    $yamlParser->parse($overrideListsFile)
+                );
+            }
         } catch (\InvalidArgumentException $e) {
             // Intentionally left blank. We silently ignore missing override file.
         }

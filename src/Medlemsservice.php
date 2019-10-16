@@ -27,7 +27,7 @@ class Medlemsservice extends Odoo
      *
      * Load credentials and call parent with right arguments.
      *
-     * @param MSML\Config $config Configuration object
+     * @param \MSML\Config $config Configuration object
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
