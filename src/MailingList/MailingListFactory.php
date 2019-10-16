@@ -15,7 +15,7 @@ class MailingListFactory
     /**
      * Construct the factory.
      *
-     * @param MSML\Config $config
+     * @param \MSML\Config $config
      */
     public function __construct(Config $config)
     {
@@ -48,8 +48,12 @@ class MailingListFactory
      *
      * @return MailingListInterface
      */
-    public function create(string $listName, array $addresses, Config $config, OutputInterface $output)
-    {
+    public function create(
+        string $listName,
+        array $addresses,
+        Config $config,
+        OutputInterface $output
+    ): MailingListInterface {
         return new $this->class($listName, $addresses, $config, $output);
     }
 }

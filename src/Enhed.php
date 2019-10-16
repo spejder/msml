@@ -39,7 +39,7 @@ class Enhed
      * Construct but lazy load most stuff.
      *
      * @param Odoo   $odooClient       The Odoo Client to use for later lookups.
-     * @param string $organizationCode The organization code.
+     * @param int    $organizationCode The organization code.
      * @param string $enhedId          The Enhed ID (i.e. "2227-5").
      */
     public function __construct(Odoo $odooClient, int $organizationCode, string $enhedId = null)
@@ -63,7 +63,7 @@ class Enhed
      *
      * @return array
      */
-    public function getLeaders()
+    public function getLeaders(): array
     {
         // Preferably use an cached version.
         if (empty($this->leaders)) {
@@ -78,7 +78,7 @@ class Enhed
      *
      * @return array
      */
-    public function getLeaderlist()
+    public function getLeaderlist(): array
     {
         // Preferably use an cached version.
         if (empty($this->leaderlist)) {
@@ -93,7 +93,7 @@ class Enhed
      *
      * @return array
      */
-    public function getBoard()
+    public function getBoard(): array
     {
         // Preferably use an cached version.
         if (empty($this->board)) {
@@ -108,7 +108,7 @@ class Enhed
      *
      * @return array
      */
-    public function getWebmaster()
+    public function getWebmaster(): array
     {
         // Preferably use an cached version.
         if (empty($this->webmaster)) {
@@ -123,7 +123,7 @@ class Enhed
      *
      * @return array
      */
-    public function getMembers()
+    public function getMembers(): array
     {
         // Preferably use an cached version.
         if (empty($this->members)) {
@@ -138,7 +138,7 @@ class Enhed
      *
      * @return array
      */
-    public function getBestyrelsesformand()
+    public function getBestyrelsesformand(): array
     {
         // Preferably use an cached version.
         if (empty($this->bestyrelsesformand)) {
@@ -153,7 +153,7 @@ class Enhed
      *
      * @return array
      */
-    public function getGruppeleder()
+    public function getGruppeleder(): array
     {
         // Preferably use an cached version.
         if (empty($this->gruppeleder)) {
@@ -168,7 +168,7 @@ class Enhed
      *
      * @return array
      */
-    public function getGruppekasserer()
+    public function getGruppekasserer(): array
     {
         // Preferably use an cached version.
         if (empty($this->gruppekasserer)) {

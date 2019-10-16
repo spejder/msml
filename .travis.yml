@@ -17,6 +17,11 @@ after_success:
 - composer install --no-dev
 - ~/.composer/vendor/bin/box build --no-interaction
 
+script:
+  - vendor/bin/phpunit
+  - vendor/bin/phpcs
+  - vendor/bin/phpstan analyse --level=max --no-interaction --no-progress msml src/
+
 deploy:
   # Deploy to Github Releases
   - provider: releases

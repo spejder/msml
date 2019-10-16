@@ -45,7 +45,7 @@ class Profile
      *
      * @return string
      */
-    public function getMail()
+    public function getMail(): string
     {
         if (empty($this->mail)) {
             $this->extractProfile();
@@ -57,9 +57,9 @@ class Profile
     /**
      * Get a list of relations emails.
      *
-     * @return array
+     * @return string[]
      */
-    public function getRelationMails()
+    public function getRelationMails(): array
     {
         $this->expandRelations();
         $result = [];

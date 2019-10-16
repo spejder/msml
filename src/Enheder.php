@@ -2,6 +2,8 @@
 
 namespace MSML;
 
+use Jsg\Odoo\Odoo;
+
 /**
  * A class holding a collection of Enhed's.
  */
@@ -13,9 +15,9 @@ class Enheder
     /**
      * Construct using an Odoo Client.
      *
-     * @param Odoo $odooClient The Odoo Client to use for lookups.
+     * @param \Jsg\Odoo\Odoo $odooClient The Odoo Client to use for lookups.
      */
-    public function __construct(\Jsg\Odoo\Odoo $odooClient)
+    public function __construct(Odoo $odooClient)
     {
         $this->odooClient = $odooClient;
         $this->collection = [];
@@ -26,9 +28,9 @@ class Enheder
      *
      * @param string $enhedId The Enhed ID to lookup by (i.e. "8960").
      *
-     * @return Enhed
+     * @return Enhed|null
      */
-    public function getById(string $enhedId)
+    public function getById(string $enhedId): ?Enhed
     {
         return $this->requestEnhed($enhedId, 'id');
     }
@@ -38,9 +40,9 @@ class Enheder
      *
      * @param string $organizationCode The Enhed organization code to lookup by (i.e. "2227-5").
      *
-     * @return Enhed
+     * @return Enhed|null
      */
-    public function getByOrganizationCode(string $organizationCode)
+    public function getByOrganizationCode(string $organizationCode): ?Enhed
     {
         return $this->requestEnhed($organizationCode, 'organization_code');
     }
@@ -48,12 +50,12 @@ class Enheder
     /**
      * Lookup an Enhed by it's ID (i.e. "2227-5") from Odoo.
      *
-     * @param string $enhedId The Enhed value to lookup by (i.e. "2227-5").
+     * @param string $value The Enhed value to lookup by (i.e. "2227-5").
      * @param string $field The Enhed field to lookup in (i.e. "id" or "organisation_code").
      *
-     * @return Enhed
+     * @return Enhed|null
      */
-    protected function requestEnhed(string $value, string $field)
+    protected function requestEnhed(string $value, string $field): ?Enhed
     {
         if (!empty($this->collection[$field][$value])) {
             return $this->collection[$field][$value];

@@ -93,6 +93,12 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $profiles = $this->container->get('profiles');
 
         $selectedLists = $input->getArgument('list');
+
+        // Normalize data structure to always be an array.
+        if (!is_array($selectedLists)) {
+            $selectedLists = [ $selectedLists ];
+        }
+
         $this->config['dry-run'] = $input->getOption('dry-run');
 
         if (empty($lists)) {
@@ -121,7 +127,13 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                     $enhed = $enheder->getById($conf['id']);
                 }
 
-                $profileIds = call_user_func([$enhed, 'get' . ucfirst($conf['type'])]);
+                $callable = [$enhed, 'get' . ucfirst($conf['type'])];
+
+                if (!is_callable($callable)) {
+                    continue;
+                }
+
+                $profileIds = call_user_func($callable);
 
                 // If type is members we need to filter out leaders.
                 if ('members' == $conf['type']) {
@@ -143,7 +155,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                 }, $profileIds);
 
                 if (!empty($mails)) {
-                    $mails = call_user_func_array('array_merge', $mails);
+                    $mails = call_user_func_array('array_merge', array_values($mails));
                 }
 
                 $addresses = array_unique(array_merge($mails, $addresses));

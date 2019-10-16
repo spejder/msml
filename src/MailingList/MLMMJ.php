@@ -82,7 +82,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
         if (empty($subscribers)) {
             $this->currentSubscribers = [];
 
-            return;
+            return [];
         }
 
         $this->currentSubscribers = explode("\n", trim($subscribers));
@@ -132,7 +132,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
      *
      * @return string The command
      */
-    protected function mlmmjCommand(string $command, array $extraArguments = [])
+    protected function mlmmjCommand(string $command, array $extraArguments = []): string
     {
         $extraArguments = implode(' ', $extraArguments);
 
