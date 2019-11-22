@@ -6,7 +6,7 @@
     "require": {
         "php": ">=7.0.0",
         "jacobsteringa/odoo-client": "^0.3",
-        "symfony/yaml": "^4.1",
+        "symfony/yaml": "^5.0",
         "symfony/dependency-injection": "^4.1",
         "symfony/config": "^4.1",
         "symfony/console": "^4.2",
