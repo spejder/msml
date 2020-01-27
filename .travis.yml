@@ -20,7 +20,7 @@ after_success:
 script:
   - vendor/bin/phpunit
   - vendor/bin/phpcs
-  - vendor/bin/phpstan analyse --level=max --no-interaction --no-progress msml src/
+  - vendor/bin/phpstan analyse --no-interaction --no-progress msml src/
 
 deploy:
   # Deploy to Github Releases
