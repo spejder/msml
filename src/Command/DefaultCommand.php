@@ -52,7 +52,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
     public function completeArgumentValues($argumentName, CompletionContext $context)
     {
         if ($argumentName == 'list') {
-            return array_keys($this->config['lists']);
+            return array_keys($this->config['lists']['lists'] ?? $this->config['lists']);
         }
     }
 
@@ -87,7 +87,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $style = new OutputFormatterStyle(null, null, array('bold', 'underscore'));
         $output->getFormatter()->setStyle('list', $style);
 
-        $lists = $this->config['lists'];
+        $lists = $this->config['lists']['lists'] ?? $this->config['lists'];
 
         $enheder = $this->container->get('enheder');
         $profiles = $this->container->get('profiles');
