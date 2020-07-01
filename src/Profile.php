@@ -13,7 +13,6 @@ class Profile
     protected $profiles;
     protected $profileId;
 
-    protected $name;
     protected $mail;
     protected $relationPartnerIds;
     protected $relationProfileIds;
@@ -34,7 +33,6 @@ class Profile
         $this->profiles = $profiles;
         $this->profileId = $profileId;
 
-        $this->name = null;
         $this->mail = null;
         $this->relationPartnerIds = [];
         $this->relationProfileIds = [];
@@ -75,10 +73,10 @@ class Profile
      */
     protected function extractProfile()
     {
-        $fields = ['name', 'email', 'member_number', 'relation_all_ids'];
-        $profile = $this->odooClient->read('member.profile', $this->profileId, $fields);
+        $fields = ['email', 'relation_all_ids'];
+        $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
+        $profile = reset($profiles);
 
-        $this->name = trim($profile['name']);
         $this->mail = trim($profile['email']);
         $this->relationPartnerIds = $profile['relation_all_ids'];
     }
