@@ -76,7 +76,8 @@ class Profile
     protected function extractProfile()
     {
         $fields = ['name', 'email', 'member_number', 'relation_all_ids'];
-        $profile = $this->odooClient->read('member.profile', $this->profileId, $fields);
+        $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
+        $profile = reset($profiles);
 
         $this->name = trim($profile['name']);
         $this->mail = trim($profile['email']);
