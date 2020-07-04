@@ -12,6 +12,7 @@ jobs:
     - name: Bump version and push tag
       if: github.ref == 'refs/heads/master'
       uses: anothrNick/github-tag-action@master
+      id: version
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
@@ -22,5 +23,6 @@ jobs:
         password: ${{ secrets.DOCKER_TOKEN }}
         # Assume the same repo name on Docker Hub as on GitHub
         repository: ${{ github.repository }}
+        tags: ${{ steps.version.outputs.new_tag }}
         tag_with_ref: true
         add_git_labels: true
