@@ -13,7 +13,7 @@ FROM php:7.4.7-alpine
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
-RUN apk add --no-cache tini=~0.18 mlmmj=~1.3
+RUN apk add --no-cache tini=~0.19 mlmmj=~1.3
 
 WORKDIR /workdir
 VOLUME ["/workdir", "/var/spool/mlmmj"]
