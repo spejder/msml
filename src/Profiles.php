@@ -2,7 +2,7 @@
 
 namespace MSML;
 
-use Jsg\Odoo\Odoo;
+use Spejder\Odoo\Odoo;
 
 /**
  * Profile collection class.

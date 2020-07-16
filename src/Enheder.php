@@ -2,7 +2,7 @@
 
 namespace MSML;
 
-use Jsg\Odoo\Odoo;
+use Spejder\Odoo\Odoo;
 
 /**
  * A class holding a collection of Enhed's.
@@ -15,7 +15,7 @@ class Enheder
     /**
      * Construct using an Odoo Client.
      *
-     * @param \Jsg\Odoo\Odoo $odooClient The Odoo Client to use for lookups.
+     * @param \Spejder\Odoo\Odoo $odooClient The Odoo Client to use for lookups.
      */
     public function __construct(Odoo $odooClient)
     {
