@@ -3,9 +3,10 @@
 namespace MSML;
 
 use Symfony\Component\Yaml\Yaml;
-use Jsg\Odoo\Odoo;
+use Spejder\Odoo\Odoo;
 use Fduch\Netrc\Netrc;
-use Zend\Http\Client as HttpClient;
+use Laminas\XmlRpc\Client as XmlRpcClient;
+use Laminas\Http\Client as HttpClient;
 
 /**
  * Medlemsservice.
@@ -80,7 +81,7 @@ class Medlemsservice extends Odoo
      *
      * {@inheritDoc}
      */
-    protected function getClient($path = null)
+    protected function getClient(?string $path = null): XmlRpcClient
     {
         $this->httpClient = new HttpClient();
         if (!empty($this->config['config']['odoo']['client_options'])) {
@@ -88,34 +89,5 @@ class Medlemsservice extends Odoo
         }
 
         return parent::getClient($path);
-    }
-
-    /**
-     * Search_read model(s)
-     *
-     * @param string  $model  Model
-     * @param array   $data   Array of criteria
-     * @param array   $fields Index array of fields to fetch, an empty array fetches all fields
-     * @param integer $offset Offset
-     * @param integer $limit  Max results
-     *
-     * @return array An array of models
-     *
-     * @see https://github.com/jacobsteringa/OdooClient/pull/10
-     */
-    public function searchRead($model, $data = array(), $fields = array(), $offset = 0, $limit = 100)
-    {
-        $params = $this->buildParams(array(
-            $model,
-            'search_read',
-            $data,
-            $fields,
-            $offset,
-            $limit,
-        ));
-
-        $response = $this->getClient('object')->call('execute', $params);
-
-        return $response;
     }
 }
