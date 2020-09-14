@@ -1,4 +1,4 @@
-FROM composer:1.10.12 AS build-env
+FROM composer:1.10.13 AS build-env
 
 RUN composer global require humbug/box:^3.5 --prefer-dist --update-no-dev
 
