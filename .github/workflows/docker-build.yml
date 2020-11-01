@@ -33,5 +33,5 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         tags: |
           spejder/msml:latest
-          spejder/msml:${{ steps.version.outputs.new_tag }}
+          spejder/msml:${{ steps.version.outputs.tag }}
         push: true
