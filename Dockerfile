@@ -1,6 +1,6 @@
 FROM composer:2.0.6 AS build-env
 
-RUN composer global require humbug/box:^3.5 --prefer-dist --update-no-dev
+RUN composer global require humbug/box:^3.8 --prefer-dist --update-no-dev
 
 COPY . /opt/msml/
 
