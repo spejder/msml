@@ -1,13 +1,11 @@
 FROM composer:2.0.6 AS build-env
 
-RUN composer global require humbug/box:^3.8 --prefer-dist --update-no-dev
-
 COPY . /opt/msml/
 
 WORKDIR /opt/msml
 
-RUN composer install --prefer-dist --no-dev
-RUN /tmp/vendor/bin/box build -v --no-interaction
+RUN composer install --prefer-dist
+RUN ./vendor/bin/box compile --verbose --no-interaction
 
 FROM php:7.4.12-alpine
 
