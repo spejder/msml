@@ -1,5 +1,4 @@
 {
-    "chmod": "0755",
     "directories": [
         "src",
         "config"
@@ -18,8 +17,5 @@
             "in": "vendor"
         }
     ],
-    "git-version": "package_version",
-    "main": "msml",
-    "output": "msml.phar",
-    "stub": true
+    "git-version": "package_version"
 }
