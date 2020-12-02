@@ -7,7 +7,7 @@ WORKDIR /opt/msml
 RUN composer install --prefer-dist
 RUN ./vendor/bin/box compile --verbose --no-interaction
 
-FROM php:7.4.12-alpine
+FROM php:7.4.13-alpine
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
