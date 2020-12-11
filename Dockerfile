@@ -1,4 +1,4 @@
-FROM composer:2.0.7 AS build-env
+FROM composer:2.0.8 AS build-env
 
 COPY . /opt/msml/
 
