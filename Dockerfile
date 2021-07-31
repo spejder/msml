@@ -4,7 +4,7 @@ COPY . /opt/msml/
 
 WORKDIR /opt/msml
 
-RUN composer install --prefer-dist
+RUN composer install --no-interaction --no-progress
 RUN ./vendor/bin/box compile --verbose --no-interaction
 
 FROM php:7.4.22-alpine
