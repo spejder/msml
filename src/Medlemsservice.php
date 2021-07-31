@@ -18,10 +18,10 @@ use Laminas\Http\Client as HttpClient;
  */
 class Medlemsservice extends Odoo
 {
-    protected $msHost = 'medlem.dds.dk';
-    protected $msDatabase = 'dds';
-    protected $msUrl;
-    protected $config;
+    protected string $msHost = 'medlem.dds.dk';
+    protected string $msDatabase = 'dds';
+    protected string $msUrl;
+    protected Config $config;
 
     /**
      * Construct Medlemsservice API client.

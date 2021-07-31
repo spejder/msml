@@ -20,8 +20,8 @@ use MSML\Config;
  */
 class MLMMJ extends AbstractMailingList implements MailingListInterface
 {
-    protected $listFolder;
-    protected $commandPrefix = '';
+    protected string $listFolder;
+    protected string $commandPrefix = '';
 
     /**
      * Create list based on list name and addresses.
@@ -69,7 +69,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
     /**
      * {@inheritDoc}
      */
-    protected function currentSubscribers()
+    protected function currentSubscribers(): void
     {
         $command = $this->mlmmjCommand('list');
 
@@ -81,8 +81,6 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
 
         if (empty($subscribers)) {
             $this->currentSubscribers = [];
-
-            return [];
         }
 
         $this->currentSubscribers = explode("\n", trim($subscribers));
@@ -91,7 +89,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
     /**
      * {@inheritDoc}
      */
-    protected function unsubscribe(array $unsubscribers)
+    protected function unsubscribe(array $unsubscribers): void
     {
         foreach ($unsubscribers as $unsubscribe) {
             $command = $this->mlmmjCommand('unsub', ['-a', $unsubscribe]);
@@ -109,7 +107,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
     /**
      * {@inheritDoc}
      */
-    protected function subscribe(array $subscribers)
+    protected function subscribe(array $subscribers): void
     {
         foreach ($subscribers as $subscribe) {
             $command = $this->mlmmjCommand('sub', ['-a', $subscribe]);

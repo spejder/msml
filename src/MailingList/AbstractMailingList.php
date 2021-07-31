@@ -12,12 +12,19 @@ use MSML\Config;
  */
 abstract class AbstractMailingList implements MailingListInterface
 {
-    protected $listName;
-    protected $addresses;
-    protected $config;
-    protected $output;
+    protected string $listName;
 
-    protected $currentSubscribers;
+    /**
+     * @var array<string>
+     */
+    protected array $addresses;
+    protected Config $config;
+    protected OutputInterface $output;
+
+    /**
+     * @var array<mixed>
+     */
+    protected array $currentSubscribers;
 
     /**
      * Create list based on list name and addresses.
@@ -35,7 +42,7 @@ abstract class AbstractMailingList implements MailingListInterface
     /**
      * {@inheritDoc}
      */
-    public function save()
+    public function save(): void
     {
         $this->currentSubscribers();
 
@@ -60,15 +67,15 @@ abstract class AbstractMailingList implements MailingListInterface
     /**
      * {@inheritDoc}
      */
-    abstract protected function currentSubscribers();
+    abstract protected function currentSubscribers(): void;
 
     /**
-     * {@inheritDoc}
+     * @param array<mixed> $unsubscribers
      */
-    abstract protected function unsubscribe(array $unsubscribers);
+    abstract protected function unsubscribe(array $unsubscribers): void;
 
     /**
-     * {@inheritDoc}
+     * @param array<mixed> $subscribers
      */
-    abstract protected function subscribe(array $subscribers);
+    abstract protected function subscribe(array $subscribers): void;
 }

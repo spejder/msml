@@ -14,7 +14,7 @@ interface MailingListInterface
      * Create list based on list name and addresses.
      *
      * @param string          $listName  The list name / identifier
-     * @param array           $addresses Addresses
+     * @param array<string>   $addresses Addresses
      * @param Config          $config    Configuration object
      * @param OutputInterface $output    For output
      */
@@ -23,5 +23,5 @@ interface MailingListInterface
     /**
      * Save / sync the addresses to the mailing list.
      */
-    public function save();
+    public function save(): void;
 }

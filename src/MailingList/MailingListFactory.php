@@ -10,7 +10,7 @@ use MSML\Config;
  */
 class MailingListFactory
 {
-    protected $class = 'Mlmmj';
+    protected string $class = 'MLMMJ';
 
     /**
      * Construct the factory.
@@ -31,7 +31,8 @@ class MailingListFactory
             $this->class = 'MSML\\MailingList\\' . $this->class;
         }
 
-        if (!in_array('MSML\MailingList\MailingListInterface', class_implements($this->class))) {
+        $class = class_implements($this->class);
+        if (!$class || !in_array('MSML\MailingList\MailingListInterface', $class)) {
             throw new \InvalidArgumentException(
                 'Mailing list class, ' . $this->class . ', does not implement MSML\MailingList\MailingListInterface.'
             );
@@ -42,7 +43,7 @@ class MailingListFactory
      * Create a mailing list class.
      *
      * @param string          $listName  The list name / identifier
-     * @param array           $addresses Addresses
+     * @param array<string>   $addresses Addresses
      * @param Config          $config    Configuration object
      * @param OutputInterface $output    For output
      *
