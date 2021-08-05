@@ -2,26 +2,33 @@
 
 namespace MSML\Command;
 
+use MSML\Config;
+use MSML\Enhed;
+use MSML\Enheder;
+use MSML\MailingList\MailingListFactory;
+use MSML\Profiles;
+use Stecman\Component\Symfony\Console\BashCompletion\CompletionContext;
+use Stecman\Component\Symfony\Console\BashCompletion\Completion\CompletionAwareInterface;
+use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Stecman\Component\Symfony\Console\BashCompletion\Completion\CompletionAwareInterface;
-use Stecman\Component\Symfony\Console\BashCompletion\CompletionContext;
 
 /**
  * The default command.
  */
 class DefaultCommand extends Command implements CompletionAwareInterface
 {
-    protected $container;
-    protected $config;
+    protected ContainerBuilder $container;
+    protected Config $config;
+    protected MailingListFactory $listFactory;
 
     /**
      * {@inheritDoc}
@@ -36,7 +43,22 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $loader = new YamlFileLoader($this->container, $fileLocator);
         $loader->load('services.yml');
 
-        $this->config = $this->container->get('config');
+        $config = $this->container->get('config');
+        if (is_null($config)) {
+            throw new \RuntimeException('No config service');
+        }
+
+        /** @var \MSML\Config $config */
+        $this->config = $config;
+
+
+        $listFactory = $this->container->get('mailinglist.factory');
+        if (is_null($listFactory)) {
+            throw new \RuntimeException('No mailing list factory');
+        }
+
+        /** @var \MSML\MailingList\MailingListFactory $listFactory */
+        $this->listFactory = $listFactory;
     }
 
     /**
@@ -44,6 +66,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
      */
     public function completeOptionValues($optionName, CompletionContext $context)
     {
+        return [];
     }
 
     /**
@@ -51,15 +74,17 @@ class DefaultCommand extends Command implements CompletionAwareInterface
      */
     public function completeArgumentValues($argumentName, CompletionContext $context)
     {
-        if ($argumentName == 'list') {
-            return array_keys($this->config['lists']['lists'] ?? $this->config['lists']);
+        if ($argumentName != 'list') {
+            return [];
         }
+
+        return array_keys($this->config['lists']['lists'] ?? $this->config['lists']);
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('sync')
@@ -82,7 +107,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
     /**
      * {@inheritDoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $style = new OutputFormatterStyle(null, null, array('bold', 'underscore'));
         $output->getFormatter()->setStyle('list', $style);
@@ -90,7 +115,15 @@ class DefaultCommand extends Command implements CompletionAwareInterface
         $lists = $this->config['lists']['lists'] ?? $this->config['lists'];
 
         $enheder = $this->container->get('enheder');
+
+        if (!$enheder instanceof Enheder) {
+            throw new \RuntimeException('No "enheder".');
+        }
+
         $profiles = $this->container->get('profiles');
+        if (!$profiles instanceof Profiles) {
+            throw new \RuntimeException('No profiles.');
+        }
 
         $selectedLists = $input->getArgument('list');
 
@@ -127,6 +160,10 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                     $enhed = $enheder->getById($conf['id']);
                 }
 
+                if (!$enhed instanceof Enhed) {
+                    continue;
+                }
+
                 $callable = [$enhed, 'get' . ucfirst($conf['type'])];
 
                 if (!is_callable($callable)) {
@@ -161,8 +198,10 @@ class DefaultCommand extends Command implements CompletionAwareInterface
                 $addresses = array_unique(array_merge($mails, $addresses));
             }
 
-            $list = $this->container->get('mailinglist.factory')->create($listName, $addresses, $this->config, $output);
+            $list = $this->listFactory->create($listName, $addresses, $this->config, $output);
             $list->save();
         }
+
+        return 0;
     }
 }

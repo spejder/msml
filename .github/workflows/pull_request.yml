@@ -1,0 +1,39 @@
+on: pull_request
+name: Linting, analysis, tests
+jobs:
+  review_codestyle:
+    name: PHP
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup PHP, with composer and extensions
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 7.4
+        coverage: none
+        tools: composer:v2
+    - name: Validate composer.json
+      run: |
+        composer validate --no-check-all --no-check-publish
+    - name: Install composer dependencies
+      run: |
+        composer install --no-interaction --no-progress
+        # Add vendor/bin to PATH for subsequent steps, see https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#adding-a-system-path
+        composer config bin-dir --absolute >> "${GITHUB_PATH}"
+    - name: phpunit
+      run: |
+        phpunit
+    - name: phpstan
+      run: |
+        phpstan
+    - name: phpcs
+      run: |
+        phpcs
+
+  markdown_lint:
+    name: Markdown
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: markdownlint
+      uses: actionshub/markdownlint@main

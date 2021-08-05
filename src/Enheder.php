@@ -9,8 +9,12 @@ use Spejder\Odoo\Odoo;
  */
 class Enheder
 {
-    protected $odooClient;
-    protected $collection;
+    protected Odoo $odooClient;
+
+    /**
+     * @var array<string, array<string, Enhed>>
+     */
+    protected array $collection;
 
     /**
      * Construct using an Odoo Client.

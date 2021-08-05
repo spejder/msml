@@ -9,8 +9,12 @@ use Spejder\Odoo\Odoo;
  */
 class Profiles
 {
-    protected $odooClient;
-    protected $collection;
+    protected Odoo $odooClient;
+
+    /**
+     * @var array<int, \MSML\Profile>
+     */
+    protected array $collection;
 
     /**
      * Construct using an Odoo Client.
@@ -45,16 +49,20 @@ class Profiles
      *
      * @param int $profileId The profile ID to lookup by.
      */
-    protected function requestProfile(int $profileId)
+    protected function requestProfile(int $profileId): void
     {
-        $profiles = $this->odooClient->search('member.profile', [['id', '=', $profileId]]);
-
         if (empty($profileId)) {
-            $this->collection[$profileId] = null;
-
             return;
         }
 
-        $this->collection[$profileId] = new Profile($this->odooClient, $this, reset($profiles));
+        $profiles = $this->odooClient->search('member.profile', [['id', '=', $profileId]]);
+
+        $profile = reset($profiles);
+
+        if (!is_int($profile)) {
+            return;
+        }
+
+        $this->collection[$profileId] = new Profile($this->odooClient, $this, $profile);
     }
 }

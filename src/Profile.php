@@ -9,13 +9,21 @@ use Spejder\Odoo\Odoo;
  */
 class Profile
 {
-    protected $odooClient;
-    protected $profiles;
-    protected $profileId;
+    protected Odoo $odooClient;
+    protected Profiles $profiles;
+    protected int $profileId;
 
-    protected $mail;
-    protected $relationPartnerIds;
-    protected $relationProfileIds;
+    protected ?string $mail;
+
+    /**
+     * @var array<int>
+     */
+    protected array $relationPartnerIds;
+
+    /**
+     * @var array<int>
+     */
+    protected array $relationProfileIds;
 
     // Hard coded medlemssystem value.
     protected const TYPE_CHILD_OF = 11;
@@ -40,10 +48,8 @@ class Profile
 
     /**
      * Get mail of profile.
-     *
-     * @return string
      */
-    public function getMail(): string
+    public function getMail(): ?string
     {
         if (empty($this->mail)) {
             $this->extractProfile();
@@ -71,7 +77,7 @@ class Profile
     /**
      * Extract profile from Odoo.
      */
-    protected function extractProfile()
+    protected function extractProfile(): void
     {
         $fields = ['email', 'relation_all_ids'];
         $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
@@ -84,7 +90,7 @@ class Profile
     /**
      * Expand Relation Partner IDs into their Profile IDs.
      */
-    protected function expandRelations()
+    protected function expandRelations(): void
     {
         // Bail out early if already expanded.
         if (!empty($this->relationProfileIds)) {
@@ -107,8 +113,15 @@ class Profile
                 $criteria = [
                     ['partner_id', '=', $relation['other_partner_id'][0]],
                 ];
-                $profile = $this->odooClient->search('member.profile', $criteria);
-                $this->relationProfileIds[] = reset($profile);
+                $profiles = $this->odooClient->search('member.profile', $criteria);
+
+                $profile = reset($profiles);
+
+                if (!is_int($profile)) {
+                    continue;
+                }
+
+                $this->relationProfileIds[] = $profile;
             }
         }
     }
