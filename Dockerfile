@@ -4,8 +4,11 @@ COPY . /opt/msml/
 
 WORKDIR /opt/msml
 
-RUN composer install --no-interaction --no-progress
-RUN ./vendor/bin/box compile --verbose --no-interaction
+RUN composer install --no-interaction --no-progress \
+ && ./vendor/bin/box compile --verbose --no-interaction
+
+# Run the phar file just to make sure it works.
+RUN ./msml.phar
 
 FROM php:7.4.22-alpine
 
