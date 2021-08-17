@@ -37,6 +37,17 @@ abstract class AbstractMailingList implements MailingListInterface
         $this->addresses = array_map('strtolower', $addresses);
         $this->config = $config;
         $this->output = $output;
+
+        // Add extra addresses from config.
+        if (
+            !empty($this->config['config']['extras'][$listName]) &&
+            is_array($this->config['config']['extras'][$listName])
+        ) {
+            $this->addresses = array_merge(
+                $this->addresses,
+                array_map('strtolower', $this->config['config']['extras'][$listName])
+            );
+        }
     }
 
     /**

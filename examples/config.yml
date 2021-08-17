@@ -8,6 +8,10 @@ credentials:
 # Credentials can also be specified in ~/.netrc:
 # machine medlem.dds.dk login 123456 password correcthorsebatterystaple
 
+extras:
+  webmaster@b21b.dk:
+    - foo@example.com
+
 odoo:
   # Zend\Http\Client httpOptions. I.e. timeout:
   client_options:
