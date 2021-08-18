@@ -81,6 +81,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
 
         if (empty($subscribers)) {
             $this->currentSubscribers = [];
+            return;
         }
 
         $this->currentSubscribers = explode("\n", trim($subscribers));
