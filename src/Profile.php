@@ -2,6 +2,7 @@
 
 namespace MSML;
 
+use Email\Parse;
 use Spejder\Odoo\Odoo;
 
 /**
@@ -83,7 +84,8 @@ class Profile
         $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
         $profile = reset($profiles);
 
-        $this->mail = trim($profile['email']);
+        $parsedMail = Parse::getInstance()->parse($profile['email']);
+        $this->mail = $parsedMail['success'] ? reset($parsedMail['email_addresses'])['simple_address'] : null;
         $this->relationPartnerIds = $profile['relation_all_ids'];
     }
 
