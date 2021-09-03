@@ -57,7 +57,7 @@ jobs:
         name: Release ${{ steps.version.outputs.new_tag }}
         bodyFile: ${{ runner.temp }}/ChangeLog.md
     - name: Anchore Container Vulnerability Scan
-      uses: anchore/scan-action@v2
+      uses: anchore/scan-action@v3
       id: scan
       with:
         image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.tag || github.sha }}
