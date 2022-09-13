@@ -3,8 +3,14 @@
     "type": "library",
     "description": "Medlemsservice til Mailingliste-synkronisering",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url" : "https://github.com/acquia/netrc.git"
+        }
+    ],
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=8",
         "fduch/netrc": "^2.0",
         "mmucklo/email-parse": "^2.0",
         "spejder/odoo-client": "^1.0",
@@ -38,6 +44,10 @@
     },
     "config": {
         "sort-packages": true,
-        "lock": false
+        "lock": false,
+        "allow-plugins": {
+            "ocramius/package-versions": true,
+            "phpstan/extension-installer": true
+        }
     }
 }

@@ -1,8 +1,10 @@
-FROM composer:2.0.8 AS build-env
+FROM composer:2.4.1 AS build-env
 
 COPY . /opt/msml/
 
 WORKDIR /opt/msml
+
+RUN composer config --global github-protocols https
 
 RUN composer install --no-interaction --no-progress \
  && ./vendor/bin/box compile --verbose --no-interaction
@@ -10,7 +12,7 @@ RUN composer install --no-interaction --no-progress \
 # Run the phar file just to make sure it works.
 RUN ./msml.phar
 
-FROM php:7.4.30-alpine
+FROM php:8.1.10-alpine
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
