@@ -16,7 +16,7 @@
         "spejder/odoo-client": "^1.0",
         "stecman/symfony-console-completion": "^0.11.0",
         "symfony/config": "^5",
-        "symfony/console": "^4.2",
+        "symfony/console": "^4.2 || ^5.0",
         "symfony/dependency-injection": "^5",
         "symfony/yaml": "^5.0"
     },
