@@ -1,3 +1,5 @@
+name: Docker build and push
+
 on:
   workflow_run:
     workflows: ["Linting, analysis, tests"]
@@ -5,7 +7,11 @@ on:
     types:
       - completed
 
-name: Docker build and push
+permissions:
+  contents: write
+  packages: write
+  security-events: write
+
 jobs:
   build:
     name: Docker build and push
@@ -17,10 +23,10 @@ jobs:
       with:
         fetch-depth: 0
     - name: Bump version and push tag
-      uses: anothrNick/github-tag-action@master
+      uses: anothrNick/github-tag-action@1.45.0
       id: version
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
         WITH_V: true
         DEFAULT_BUMP: patch
     - name: Set up Docker Buildx
@@ -31,7 +37,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ github.token }}
     - name: Build and push Docker images
       uses: docker/build-push-action@v3
       with:
@@ -52,7 +58,7 @@ jobs:
       if: ${{ steps.version.outputs.new_tag != '' }}
       uses: ncipollo/release-action@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
         tag: ${{ steps.version.outputs.new_tag }}
         name: Release ${{ steps.version.outputs.new_tag }}
         bodyFile: ${{ runner.temp }}/ChangeLog.md
