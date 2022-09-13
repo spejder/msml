@@ -93,7 +93,7 @@ class Config implements \ArrayAccess
     /**
      * {@inheritDoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->config[$offset]);
     }
@@ -101,7 +101,7 @@ class Config implements \ArrayAccess
     /**
      * {@inheritDoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return isset($this->config[$offset]) ? $this->config[$offset] : null;
     }
@@ -109,7 +109,7 @@ class Config implements \ArrayAccess
     /**
      * {@inheritDoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (is_null($offset)) {
             $this->config[] = $value;
@@ -123,7 +123,7 @@ class Config implements \ArrayAccess
     /**
      * {@inheritDoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->config[$offset]);
     }
