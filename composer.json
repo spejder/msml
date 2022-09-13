@@ -3,8 +3,14 @@
     "type": "library",
     "description": "Medlemsservice til Mailingliste-synkronisering",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url" : "https://github.com/acquia/netrc.git"
+        }
+    ],
     "require": {
-        "php": ">=7.0.0",
+        "php": ">=8",
         "fduch/netrc": "^2.0",
         "mmucklo/email-parse": "^2.0",
         "spejder/odoo-client": "^1.0",
@@ -30,14 +36,18 @@
     "require-dev": {
         "humbug/box": "^3.5",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan": "^0.12.14",
-        "phpstan/phpstan-deprecation-rules": "^0.12.6",
-        "phpstan/phpstan-symfony": "^0.12.41",
+        "phpstan/phpstan": "^1",
+        "phpstan/phpstan-deprecation-rules": "^1",
+        "phpstan/phpstan-symfony": "^1",
         "phpunit/phpunit": "^9.0",
         "squizlabs/php_codesniffer": "^3.0"
     },
     "config": {
         "sort-packages": true,
-        "lock": false
+        "lock": false,
+        "allow-plugins": {
+            "ocramius/package-versions": true,
+            "phpstan/extension-installer": true
+        }
     }
 }
