@@ -16,6 +16,7 @@ class Enhed
     protected $leaders;
     protected $leaderlist;
     protected $members;
+    protected $waitingListMembers;
     protected $board;
 
     protected $gruppeleder;
@@ -131,6 +132,21 @@ class Enhed
         }
 
         return $this->members;
+    }
+
+    /**
+     * Get Waiting List Members.
+     *
+     * @return array
+     */
+    public function getWaitingListMembers(): array
+    {
+        // Preferably use an cached version.
+        if (empty($this->waitingListMembers)) {
+            $this->requestWaitingListMembers();
+        }
+
+        return $this->waitingListMembers;
     }
 
     /**
@@ -274,6 +290,18 @@ class Enhed
             ['member_id.function_ids.leader_function', '!=', true],
         ];
         $this->members = $this->odooClient->search('member.profile', $criteria);
+    }
+
+    /**
+     * Lookup waiting list members in Odoo.
+     */
+    protected function requestWaitingListMembers()
+    {
+        $criteria = [
+            ['preliminary_organization_id', '=', $this->organizationCode],
+            ['state', '=', 'waiting'],
+        ];
+        $this->waitingListMembers = $this->odooClient->search('member.profile', $criteria);
     }
 
     /**
