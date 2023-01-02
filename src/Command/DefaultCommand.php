@@ -150,7 +150,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             $addresses = [];
 
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
-                $output->writeln("<list>${list['description']}</list>");
+                $output->writeln("<list>{$list['description']}</list>");
             }
 
             foreach ($list['select'] as $conf) {
