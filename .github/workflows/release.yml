@@ -28,6 +28,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
         WITH_V: true
+        DEFAULT_BRANCH: ${{ format('refs/heads/{0}', github.event.repository.default_branch) }}
         DEFAULT_BUMP: patch
     - name: Set up Docker Buildx
       id: buildx
