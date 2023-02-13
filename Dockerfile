@@ -12,7 +12,7 @@ RUN composer install --no-interaction --no-progress \
 # Run the phar file just to make sure it works.
 RUN ./msml.phar
 
-FROM php:8.2.2-alpine3.17@sha256:91d91db35bea7a1e2d497d79dba709c37d5e38e82907c5310d8a57b5f9769cd8
+FROM php:8.2.2-alpine3.17@sha256:a86b3ceaf21e12497fbfa8ff15bfab571efd450e1a82df80199e0306bf13211e
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
