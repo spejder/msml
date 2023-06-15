@@ -68,7 +68,7 @@ jobs:
       id: scan
       with:
         image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.tag || github.sha }}
-        acs-report-enable: true
+        severity-cutoff: critical
         fail-build: false
     - name: Upload Anchore Container Vulnerability Scan SARIF report
       uses: github/codeql-action/upload-sarif@v2
