@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: markdownlint
-      uses: DavidAnson/markdownlint-cli2-action@v11
+      uses: DavidAnson/markdownlint-cli2-action@v12
 
   dockerfile:
     name: dockerfile
