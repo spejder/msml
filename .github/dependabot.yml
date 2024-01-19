@@ -8,7 +8,7 @@ updates:
     timezone: Europe/Copenhagen
   open-pull-requests-limit: 10
   reviewers:
-  - "spejder/msml"
+  - "arnested"
 - package-ecosystem: docker
   directory: "/"
   schedule:
@@ -16,7 +16,7 @@ updates:
     timezone: Europe/Copenhagen
   open-pull-requests-limit: 10
   reviewers:
-  - "spejder/msml"
+  - "arnested"
 - package-ecosystem: composer
   directory: "/"
   schedule:
@@ -24,7 +24,7 @@ updates:
     timezone: Europe/Copenhagen
   open-pull-requests-limit: 10
   reviewers:
-  - "spejder/msml"
+  - "arnested"
   allow:
   - dependency-type: direct
   - dependency-type: indirect
