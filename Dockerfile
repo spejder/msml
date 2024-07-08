@@ -1,4 +1,4 @@
-FROM composer:2.7.7@sha256:2df6a8c0e8cac0438b2492f104ed53c85816937c77beb72f6a50867d0af1e2e1 AS build-env
+FROM composer:2.7.7@sha256:1084a450042b6b6ca0f30a5bdd95430078e24ff7797c4168e5f8844c9628322b AS build-env
 
 COPY . /opt/msml/
 
