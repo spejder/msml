@@ -12,11 +12,11 @@ RUN composer install --no-interaction --no-progress \
 # Run the phar file just to make sure it works.
 RUN ./msml.phar
 
-FROM php:8.3.0-alpine3.17@sha256:af0809570027627bd16e89dea01fefcec427a1220dcaa494ee9d7afdfcfc2fcc
+FROM php:8.3-fpm-alpine@sha256:2d59be5fd0efa02b2c6306191c00d3781182f3f06ffce89bdd46fd3f1e042f60
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
-RUN apk add --no-cache tini=~0.19 mlmmj=~1.3
+RUN apk add --no-cache tini=~0.19 mlmmj=~1.4
 
 WORKDIR /workdir
 VOLUME ["/workdir", "/var/spool/mlmmj"]
