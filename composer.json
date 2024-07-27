@@ -12,6 +12,7 @@
     "require": {
         "php": ">=8",
         "fduch/netrc": "^2.0",
+        "google/apiclient": "^2.17",
         "mmucklo/email-parse": "^2.2.1",
         "spejder/odoo-client": "^1.0",
         "stecman/symfony-console-completion": "^0.11.0",
@@ -41,6 +42,14 @@
         "phpstan/phpstan-symfony": "^1",
         "phpunit/phpunit": "^9.0",
         "squizlabs/php_codesniffer": "^3.0"
+    },
+    "scripts": {
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+    },
+    "extra": {
+        "google/apiclient-services": [
+            "Directory"
+        ]
     },
     "config": {
         "sort-packages": true,

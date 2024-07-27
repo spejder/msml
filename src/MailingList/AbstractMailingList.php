@@ -17,14 +17,14 @@ abstract class AbstractMailingList implements MailingListInterface
     /**
      * @var array<string>
      */
-    protected array $addresses;
+    protected array $addresses = [];
     protected Config $config;
     protected OutputInterface $output;
 
     /**
      * @var array<mixed>
      */
-    protected array $currentSubscribers;
+    protected array $currentSubscribers = [];
 
     /**
      * Create list based on list name and addresses.
