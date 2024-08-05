@@ -39,7 +39,7 @@ class Medlemsservice extends Odoo
 
         // First we try to locate credentials in ~/.netrc
         try {
-            $netrc = Netrc::parse();
+            $netrc = Netrc::parse($config['config']['netrc'] ?? null);
 
             if (!empty($netrc[$this->msHost]['login'])) {
                 $user = $netrc[$this->msHost]['login'];
