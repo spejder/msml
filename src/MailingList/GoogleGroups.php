@@ -97,7 +97,7 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
         $body = [
             'email' => $this->listName,
             'name' => $this->listName,
-            'description' => $this->config['lists']['lists'][$this->listName]['description'] ?? '',
+            'description' => $this->getGroupDescription(),
             'kind' => 'admin#directory#group',
         ];
 
@@ -245,5 +245,16 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
                 ],
             );
         }
+    }
+
+    protected function getGroupDescription(): string
+    {
+        $description = $this->config['lists']['lists'][$this->listName]['description'] ?? '';
+
+        if (!empty($this->config['config']['google-groups']['description-prefix'])) {
+            $description = $this->config['config']['google-groups']['description-prefix'] . ' ' . $description;
+        }
+
+        return $description;
     }
 }
