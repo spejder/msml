@@ -45,6 +45,8 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
                 'GET',
                 "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}",
             );
+
+            $this->syncDescription($data);
         } catch (\Exception $e) {
             if (
                 in_array($e->getCode(), [403, 404]) &&
@@ -245,6 +247,33 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
                 ],
             );
         }
+    }
+
+    protected function syncDescription($data): void
+    {
+        $description = $this->getGroupDescription();
+
+        if ($data->description === $description) {
+            return;
+        }
+
+        $this->output->writeln('Updating description: ' . $description, OutputInterface::VERBOSITY_VERBOSE);
+
+        $body = [
+            'description' => $description,
+        ];
+
+        if ($this->config['dry-run']) {
+            $this->output->writeln('Would update description: ' . print_r($body, true));
+        }
+
+        $this->request(
+            'PATCH',
+            "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}",
+            [
+                'json' => $body,
+            ],
+        );
     }
 
     protected function getGroupDescription(): string
