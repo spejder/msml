@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML;
 
-use Symfony\Component\Yaml\Yaml;
 use Spejder\Odoo\Odoo;
 use Fduch\Netrc\Netrc;
 use Laminas\XmlRpc\Client as XmlRpcClient;

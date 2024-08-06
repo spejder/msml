@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=8",
+        "php": ">=8.3",
         "fduch/netrc": "^2.0",
         "google/apiclient": "^2.17",
         "mmucklo/email-parse": "^2.2.1",
@@ -35,7 +35,9 @@
         "msml"
     ],
     "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "humbug/box": "^3.5",
+        "phpcompatibility/php-compatibility": "^9.3",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-deprecation-rules": "^1",
@@ -56,7 +58,8 @@
         "lock": false,
         "allow-plugins": {
             "ocramius/package-versions": true,
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         }
     }
 }

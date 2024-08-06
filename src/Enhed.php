@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML;
 
 use Spejder\Odoo\Odoo;
@@ -9,21 +11,48 @@ use Spejder\Odoo\Odoo;
  */
 class Enhed
 {
-    protected $odooClient;
-    protected $organizationCode;
-    protected $enhedId;
+    protected Odoo $odooClient;
+    protected int $organizationCode;
+    protected int|string|null $enhedId;
 
-    protected $leaders;
-    protected $leaderlist;
-    protected $members;
-    protected $waitingListMembers;
-    protected $board;
+    /**
+     * @var array<int>
+     */
+    protected array $leaders;
+    /**
+     * @var array<int>
+     */
+    protected array $leaderlist;
+    /**
+     * @var array<int>
+     */
+    protected array $members;
+    /**
+     * @var array<int>
+     */
+    protected array $waitingListMembers;
+    /**
+     * @var array<int>
+     */
+    protected array $board;
 
-    protected $gruppeleder;
-    protected $bestyrelsesformand;
-    protected $gruppekasserer;
+    /**
+     * @var array<int>
+     */
+    protected array $gruppeleder;
+    /**
+     * @var array<int>
+     */
+    protected array $bestyrelsesformand;
+    /**
+     * @var array<int>
+     */
+    protected array $gruppekasserer;
 
-    protected $webmaster;
+    /**
+     * @var array<int>
+     */
+    protected array $webmaster;
 
 
     protected const BESTYRELSESFORMAND = 233;
@@ -41,9 +70,9 @@ class Enhed
      *
      * @param Odoo   $odooClient       The Odoo Client to use for later lookups.
      * @param int    $organizationCode The organization code.
-     * @param string $enhedId          The Enhed ID (i.e. "2227-5").
+     * @param int|string|null $enhedId          The Enhed ID (i.e. "2227-5").
      */
-    public function __construct(Odoo $odooClient, int $organizationCode, string $enhedId = null)
+    public function __construct(Odoo $odooClient, int $organizationCode, int|string|null $enhedId = null)
     {
         $this->odooClient = $odooClient;
         $this->organizationCode = $organizationCode;
@@ -62,7 +91,7 @@ class Enhed
     /**
      * Get leaders.
      *
-     * @return array
+     * @return array<int>
      */
     public function getLeaders(): array
     {
@@ -77,7 +106,7 @@ class Enhed
     /**
      * Get leaderlist.
      *
-     * @return array
+     * @return array<int>
      */
     public function getLeaderlist(): array
     {
@@ -92,7 +121,7 @@ class Enhed
     /**
      * Get board.
      *
-     * @return array
+     * @return array<int>
      */
     public function getBoard(): array
     {
@@ -107,7 +136,7 @@ class Enhed
     /**
      * Get webmaster.
      *
-     * @return array
+     * @return array<int>
      */
     public function getWebmaster(): array
     {
@@ -122,7 +151,7 @@ class Enhed
     /**
      * Get Members.
      *
-     * @return array
+     * @return array<int>
      */
     public function getMembers(): array
     {
@@ -137,7 +166,7 @@ class Enhed
     /**
      * Get Waiting List Members.
      *
-     * @return array
+     * @return array<int>
      */
     public function getWaitingListMembers(): array
     {
@@ -152,7 +181,7 @@ class Enhed
     /**
      * Get Bestyrelsesformænd.
      *
-     * @return array
+     * @return array<int>
      */
     public function getBestyrelsesformand(): array
     {
@@ -167,7 +196,7 @@ class Enhed
     /**
      * Get Gruppeledere.
      *
-     * @return array
+     * @return array<int>
      */
     public function getGruppeleder(): array
     {
@@ -182,7 +211,7 @@ class Enhed
     /**
      * Get Gruppekasserere.
      *
-     * @return array
+     * @return array<int>
      */
     public function getGruppekasserer(): array
     {
@@ -197,7 +226,7 @@ class Enhed
     /**
      * Lookup leaders in Odoo.
      */
-    protected function requestLeaders()
+    protected function requestLeaders(): void
     {
         // Lookup leaders IDs on organization.
         $fields = ['leader_ids'];
@@ -221,7 +250,7 @@ class Enhed
     /**
      * Lookup leaderlist in Odoo.
      */
-    protected function requestLeaderlist()
+    protected function requestLeaderlist(): void
     {
         $criteria = [
             '|',
@@ -241,7 +270,7 @@ class Enhed
     /**
      * Lookup board in Odoo.
      */
-    protected function requestBoard()
+    protected function requestBoard(): void
     {
         $criteria = [
             ['organization_id', 'child_of', $this->organizationCode],
@@ -261,7 +290,7 @@ class Enhed
     /**
      * Lookup webmasters in Odoo.
      */
-    protected function requestWebmaster()
+    protected function requestWebmaster(): void
     {
         $criteria = [
             ['organization_id', 'child_of', $this->organizationCode],
@@ -279,7 +308,7 @@ class Enhed
     /**
      * Lookup members in Odoo.
      */
-    protected function requestMembers()
+    protected function requestMembers(): void
     {
         // @todo filtrer ledere fra -- nedenstående virker ikke
         // delvist ikke pga ledere oftest _er_ medlemer (udover
@@ -295,7 +324,7 @@ class Enhed
     /**
      * Lookup waiting list members in Odoo.
      */
-    protected function requestWaitingListMembers()
+    protected function requestWaitingListMembers(): void
     {
         $criteria = [
             ['preliminary_organization_id', '=', $this->organizationCode],
@@ -307,7 +336,7 @@ class Enhed
     /**
      * Lookup gruppeledere, bestyrelsesformænd, and kasserere.
      */
-    protected function requestGruppeFunktioner()
+    protected function requestGruppeFunktioner(): void
     {
         $fields = ['leader_ids'];
         $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);

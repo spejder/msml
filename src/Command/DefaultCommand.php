@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML\Command;
 
 use MSML\Config;
@@ -17,9 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * The default command.
@@ -63,16 +63,20 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @return array<mixed>
      */
-    public function completeOptionValues($optionName, CompletionContext $context)
+    public function completeOptionValues($optionName, CompletionContext $context): array
     {
         return [];
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @return array<mixed>
      */
-    public function completeArgumentValues($argumentName, CompletionContext $context)
+    public function completeArgumentValues($argumentName, CompletionContext $context): array
     {
         if ($argumentName != 'list') {
             return [];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML;
 
 use Symfony\Component\Config\FileLocator;
@@ -7,10 +9,17 @@ use Symfony\Component\Yaml\Parser;
 
 /**
  * Config.
+ *
+  * @implements \ArrayAccess<string, mixed>
  */
 class Config implements \ArrayAccess
 {
-    protected $config;
+    /**
+     * The config.
+     *
+     * @var array<string|int, mixed>
+     */
+    protected array $config;
 
     /**
      * Construct by loading config from YAML file.

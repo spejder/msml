@@ -2,4 +2,7 @@
 <ruleset name="PHP_CodeSniffer">
   <rule ref="PSR12"/>
   <file>./src/</file>
+  <rule ref="Generic.PHP.RequireStrictTypes"/>
+  <rule ref="Squiz.Strings.DoubleQuoteUsage.NotRequired"/>
+  <rule ref="PHPCompatibility"/>
 </ruleset>

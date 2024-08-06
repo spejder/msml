@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML\MailingList;
 
 use Symfony\Component\Console\Output\OutputInterface;
