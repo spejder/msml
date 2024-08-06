@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML\MailingList;
 
 use Google\Client as GoogleClient;
@@ -62,25 +64,14 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     }
 
     /**
+     * Make request, parse response and throw exception on error.
      *
+     * @param array<mixed> $options
      */
     protected function request(string $method, string $uri, array $options = []): mixed
     {
         $response = $this->client->request($method, $uri, $options);
 
-        $data = json_decode($response->getBody()->getContents());
-        if (isset($data->error)) {
-            throw new \Exception($data->error->message ?? 'Unknown error', $data->error->code ?? 0);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Get the data from a response. With error detection.
-     */
-    protected function getData(ResponseInterface $response): mixed
-    {
         $data = json_decode($response->getBody()->getContents());
         if (isset($data->error)) {
             throw new \Exception($data->error->message ?? 'Unknown error', $data->error->code ?? 0);
@@ -249,7 +240,10 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
         }
     }
 
-    protected function syncDescription($data): void
+    /**
+     * Sync description.
+     */
+    protected function syncDescription(\stdClass $data): void
     {
         $description = $this->getGroupDescription();
 

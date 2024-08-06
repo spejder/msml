@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML;
 
 use Spejder\Odoo\Odoo;
@@ -12,7 +14,7 @@ class Enheder
     protected Odoo $odooClient;
 
     /**
-     * @var array<string, array<string, Enhed>>
+     * @var array<string, array<int|string, Enhed>>
      */
     protected array $collection;
 

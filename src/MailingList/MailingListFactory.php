@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MSML\MailingList;
 
 use Symfony\Component\Console\Output\OutputInterface;
@@ -55,6 +57,14 @@ class MailingListFactory
         Config $config,
         OutputInterface $output
     ): MailingListInterface {
-        return new $this->class($listName, $addresses, $config, $output);
+        $mailingList = new $this->class($listName, $addresses, $config, $output);
+
+        if (!$mailingList instanceof MailingListInterface) {
+            throw new \InvalidArgumentException(
+                "Mailing list class, {$this->class}, does not implement MSML\\MailingList\\MailingListInterface."
+            );
+        }
+
+        return $mailingList;
     }
 }
