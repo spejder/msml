@@ -65,14 +65,6 @@ abstract class AbstractMailingList implements MailingListInterface
             $this->output->writeln('Current Subscribers: ' . var_export($this->currentSubscribers, true));
         }
 
-        if (is_resource($summaryFile)) {
-            $count = count($this->currentSubscribers);
-            fwrite($summaryFile, "#### Current Subscribers: {$count}\n");
-            foreach ($this->currentSubscribers as $mail) {
-                fwrite($summaryFile, " - {$mail}\n");
-            };
-        }
-
         $unsubscribers = array_diff($this->currentSubscribers, $this->addresses);
         $subscribers = array_diff($this->addresses, $this->currentSubscribers);
 
