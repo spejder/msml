@@ -95,6 +95,13 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             ->setDescription('Sync mailing lists with Medlemsservice.')
             ->setHelp('This command allows you to synchronize configured mailing lists with Medlemsservice.')
             ->addOption(
+                'summary-file',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Write summary to SUMMARY-FILE',
+                null
+            )
+            ->addOption(
                 'dry-run',
                 null,
                 InputOption::VALUE_NONE,
@@ -138,6 +145,11 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
         $this->config['dry-run'] = $input->getOption('dry-run');
 
+        $summaryFile = fopen($input->getOption('summary-file'), 'w');
+        if (is_resource($summaryFile)) {
+            $this->config['summary-file'] = $summaryFile;
+        }
+
         if (empty($lists)) {
             throw new \RuntimeException('No lists configured.');
         }
@@ -155,6 +167,11 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
                 $output->writeln("<list>{$list['description']}</list>");
+            }
+
+            if (is_resource($summaryFile)) {
+                fwrite($summaryFile, "<details>\n");
+                fwrite($summaryFile, "<summary>{$listName} &ndash; {$list['description']}</summary>\n");
             }
 
             foreach ($list['select'] as $conf) {
@@ -204,6 +221,14 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
             $list = $this->listFactory->create($listName, $addresses, $this->config, $output);
             $list->save();
+
+            if (is_resource($summaryFile)) {
+                fwrite($summaryFile, "</details>\n");
+            }
+        }
+
+        if (is_resource($summaryFile)) {
+            fclose($summaryFile);
         }
 
         return 0;

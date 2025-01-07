@@ -57,10 +57,21 @@ abstract class AbstractMailingList implements MailingListInterface
      */
     public function save(): void
     {
+        $summaryFile = $this->config['summary-file'];
+
         $this->currentSubscribers();
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
             $this->output->writeln('Current Subscribers: ' . var_export($this->currentSubscribers, true));
+        }
+
+        if (is_resource($summaryFile)) {
+            $count = count($this->currentSubscribers);
+            fwrite($summaryFile, "<i>Current Subscribers: {$count}</i>\n<ul>\n");
+            foreach ($this->currentSubscribers as $mail) {
+                fwrite($summaryFile, "<li>{$mail}</li>\n");
+            };
+            fwrite($summaryFile, "</ul>\n");
         }
 
         $unsubscribers = array_diff($this->currentSubscribers, $this->addresses);
@@ -71,10 +82,28 @@ abstract class AbstractMailingList implements MailingListInterface
         }
         $this->unsubscribe($unsubscribers);
 
+        if (is_resource($summaryFile)) {
+            $count = count($unsubscribers);
+            fwrite($summaryFile, "<i>Unsubscribed: {$count}</i>\n<ul>\n");
+            foreach ($unsubscribers as $mail) {
+                fwrite($summaryFile, "<li>{$mail}</li>\n");
+            };
+            fwrite($summaryFile, "</ul>\n");
+        }
+
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
             $this->output->writeln('Subscribing: ' . var_export($subscribers, true));
         }
         $this->subscribe($subscribers);
+
+        if (is_resource($summaryFile)) {
+            $count = count($subscribers);
+            fwrite($summaryFile, "<i>Subscribed: {$count}</i>\n<ul>\n");
+            foreach ($subscribers as $mail) {
+                fwrite($summaryFile, "<li>{$mail}</li>\n");
+            };
+            fwrite($summaryFile, "</ul>\n");
+        }
     }
 
     /**
