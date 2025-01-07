@@ -170,8 +170,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             }
 
             if (is_resource($summaryFile)) {
-                fwrite($summaryFile, "<details>\n");
-                fwrite($summaryFile, "<summary>{$listName} &ndash; {$list['description']}</summary>\n");
+                fwrite($summaryFile, "### {$listName} &ndash; {$list['description']}\n");
             }
 
             foreach ($list['select'] as $conf) {
@@ -223,7 +222,7 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             $list->save();
 
             if (is_resource($summaryFile)) {
-                fwrite($summaryFile, "</details>\n");
+                fwrite($summaryFile, "---\n");
             }
         }
 
