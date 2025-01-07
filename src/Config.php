@@ -35,10 +35,6 @@ class Config implements \ArrayAccess
         try {
             $configFile = $fileLocator->locate('config.yml');
 
-            if (is_array($configFile)) {
-                $configFile = reset($configFile);
-            }
-
             $configFileContent = file_get_contents($configFile);
 
             if (!is_string($configFileContent)) {
@@ -48,10 +44,6 @@ class Config implements \ArrayAccess
             $this->config['config'] = $yamlParser->parse($configFileContent);
 
             $overrideConfigFile = $fileLocator->locate('config.override.yml');
-
-            if (is_array($overrideConfigFile)) {
-                $overrideConfigFile = reset($overrideConfigFile);
-            }
 
             $overrideConfigFileContent = file_get_contents($overrideConfigFile);
 
@@ -68,10 +60,6 @@ class Config implements \ArrayAccess
         try {
             $listsFile = $fileLocator->locate('lists.yml');
 
-            if (is_array($listsFile)) {
-                $listsFile = reset($listsFile);
-            }
-
             $listsFileContent = file_get_contents($listsFile);
 
             if (!is_string($listsFileContent)) {
@@ -81,10 +69,6 @@ class Config implements \ArrayAccess
             $this->config['lists'] = $yamlParser->parse($listsFileContent);
 
             $overrideListsFile = $fileLocator->locate('lists.override.yml');
-
-            if (is_array($overrideListsFile)) {
-                $overrideListsFile = reset($overrideListsFile);
-            }
 
             $overrideListsFileContent = file_get_contents($overrideListsFile);
 
