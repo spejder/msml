@@ -67,11 +67,10 @@ abstract class AbstractMailingList implements MailingListInterface
 
         if (is_resource($summaryFile)) {
             $count = count($this->currentSubscribers);
-            fwrite($summaryFile, "<i>Current Subscribers: {$count}</i>\n<ul>\n");
+            fwrite($summaryFile, "#### Current Subscribers: {$count}\n");
             foreach ($this->currentSubscribers as $mail) {
-                fwrite($summaryFile, "<li>{$mail}</li>\n");
+                fwrite($summaryFile, " - {$mail}\n");
             };
-            fwrite($summaryFile, "</ul>\n");
         }
 
         $unsubscribers = array_diff($this->currentSubscribers, $this->addresses);
@@ -84,11 +83,10 @@ abstract class AbstractMailingList implements MailingListInterface
 
         if (is_resource($summaryFile)) {
             $count = count($unsubscribers);
-            fwrite($summaryFile, "<i>Unsubscribed: {$count}</i>\n<ul>\n");
+            fwrite($summaryFile, "#### Unsubscribed: {$count}\n");
             foreach ($unsubscribers as $mail) {
-                fwrite($summaryFile, "<li>{$mail}</li>\n");
+                fwrite($summaryFile, " - {$mail}\n");
             };
-            fwrite($summaryFile, "</ul>\n");
         }
 
         if ($this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE) {
@@ -98,11 +96,10 @@ abstract class AbstractMailingList implements MailingListInterface
 
         if (is_resource($summaryFile)) {
             $count = count($subscribers);
-            fwrite($summaryFile, "<i>Subscribed: {$count}</i>\n<ul>\n");
+            fwrite($summaryFile, "#### Subscribed: {$count}\n");
             foreach ($subscribers as $mail) {
-                fwrite($summaryFile, "<li>{$mail}</li>\n");
+                fwrite($summaryFile, " - {$mail}\n");
             };
-            fwrite($summaryFile, "</ul>\n");
         }
     }
 
