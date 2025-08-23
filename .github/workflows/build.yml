@@ -9,6 +9,8 @@ env:
 jobs:
   review_codestyle:
     name: PHP
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
