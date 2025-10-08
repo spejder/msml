@@ -71,6 +71,6 @@ jobs:
         severity-cutoff: critical
         fail-build: false
     - name: Upload Anchore Container Vulnerability Scan SARIF report
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
