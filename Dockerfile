@@ -21,8 +21,8 @@ RUN apk add --no-cache tini=~0.19 mlmmj=~1.4
 WORKDIR /workdir
 VOLUME ["/workdir", "/var/spool/mlmmj"]
 
-LABEL io.whalebrew.config.volumes '["/var/spool/mlmmj:/var/spool/mlmmj"]'
+LABEL io.whalebrew.config.volumes='["/var/spool/mlmmj:/var/spool/mlmmj"]'
 # hadolint ignore=DL3048
-LABEL io.whalebrew.config.working_dir '$PWD'
+LABEL io.whalebrew.config.working_dir='$PWD'
 
 ENTRYPOINT ["/sbin/tini", "--", "php", "/opt/msml/msml.phar"]
