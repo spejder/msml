@@ -79,7 +79,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             $this->output->writeln('Executing commmand: ' . $command);
         }
 
-        $subscribers = `$command`;
+        $subscribers = shell_exec($command);
 
         if (empty($subscribers)) {
             $this->currentSubscribers = [];
@@ -102,7 +102,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             }
 
             if (!$this->config['dry-run']) {
-                `$command`;
+                shell_exec($command);
             }
         }
     }
@@ -120,7 +120,7 @@ class MLMMJ extends AbstractMailingList implements MailingListInterface
             }
 
             if (!$this->config['dry-run']) {
-                `$command`;
+                shell_exec($command);
             }
         }
     }
