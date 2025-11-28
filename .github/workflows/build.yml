@@ -11,7 +11,7 @@ jobs:
     name: PHP
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
     - name: Get PHP Versions
@@ -45,7 +45,7 @@ jobs:
     name: Markdown
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
     - name: markdownlint
@@ -55,7 +55,7 @@ jobs:
     name: dockerfile
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - name: Run hadolint
