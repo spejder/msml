@@ -11,13 +11,16 @@ jobs:
     name: PHP
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
+    - name: Get PHP Versions
+      id: php-version
+      uses: antfroger/php-version-action@v1
     - name: Setup PHP, with composer and extensions
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ env.PHP_VERSION }}
+        php-version: ${{ steps.php-version.outputs.minimal }}
         coverage: none
         tools: composer:v2
     - name: Validate composer.json
@@ -42,7 +45,7 @@ jobs:
     name: Markdown
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
     - name: markdownlint
@@ -52,7 +55,7 @@ jobs:
     name: dockerfile
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - name: Run hadolint
