@@ -16,7 +16,7 @@
         "mmucklo/email-parse": "^2.2.1",
         "sebastian/diff": "^5",
         "spejder/odoo-client": "^1.0",
-        "stecman/symfony-console-completion": "^0.14",
+        "stecman/symfony-console-completion": "^0.14 || ^0.15",
         "symfony/config": "^7.2 || ^8.0",
         "symfony/console": "^7.2",
         "symfony/dependency-injection": "^7.2 || ^8.0",
