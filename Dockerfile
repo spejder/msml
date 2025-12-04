@@ -16,7 +16,7 @@ FROM php:8.5.0-fpm-alpine@sha256:5ed9ba668b6eef9b5a64bd5ce64d2d055c57778a68845ae
 
 COPY --from=build-env /opt/msml/msml.phar /opt/msml/msml.phar
 
-RUN apk add --no-cache tini=~0.19 mlmmj=~1.4
+RUN apk add --no-cache tini=~0.19 mlmmj=~1.6
 
 WORKDIR /workdir
 VOLUME ["/workdir", "/var/spool/mlmmj"]
