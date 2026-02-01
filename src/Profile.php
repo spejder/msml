@@ -86,7 +86,8 @@ class Profile
         $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
         $profile = reset($profiles);
 
-        $parsedMail = Parse::getInstance()->parse($profile['email']);
+        $mail = is_string($profile['email']) ? $profile['email'] : '';
+        $parsedMail = Parse::getInstance()->parse($mail);
         $this->mail = $parsedMail['success'] ? reset($parsedMail['email_addresses'])['simple_address'] : null;
         $this->relationPartnerIds = $profile['relation_all_ids'];
     }
