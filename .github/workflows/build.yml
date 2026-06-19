@@ -13,7 +13,7 @@ jobs:
       contents: read
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Get PHP Versions
       id: php-version
       uses: antfroger/php-version-action@v1
@@ -47,7 +47,7 @@ jobs:
       contents: read
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: markdownlint
       uses: DavidAnson/markdownlint-cli2-action@v23
 
@@ -57,7 +57,7 @@ jobs:
       contents: read
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run hadolint
         uses: hadolint/hadolint-action@v3.3.0
         with:
