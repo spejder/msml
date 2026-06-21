@@ -105,6 +105,19 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
                 'json' => $body,
             ],
         );
+
+        // We need to update the list to accept external members.
+        $updateSettings = [
+            'allowExternalMembers' => 'true',
+        ];
+
+        $this->request(
+            'PATCH',
+            "https://www.googleapis.com/groups/v1/groups/{$this->listName}",
+            [
+                'json' => $updateSettings,
+            ],
+        );
     }
 
     /**
