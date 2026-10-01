@@ -9,8 +9,6 @@ use MSML\Enhed;
 use MSML\Enheder;
 use MSML\MailingList\MailingListFactory;
 use MSML\Profiles;
-use Stecman\Component\Symfony\Console\BashCompletion\CompletionContext;
-use Stecman\Component\Symfony\Console\BashCompletion\Completion\CompletionAwareInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
@@ -24,7 +22,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 /**
  * The default command.
  */
-class DefaultCommand extends Command implements CompletionAwareInterface
+class DefaultCommand extends Command
 {
     protected ContainerBuilder $container;
     protected Config $config;
@@ -63,30 +61,6 @@ class DefaultCommand extends Command implements CompletionAwareInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @return array<mixed>
-     */
-    public function completeOptionValues($optionName, CompletionContext $context): array
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return array<mixed>
-     */
-    public function completeArgumentValues($argumentName, CompletionContext $context): array
-    {
-        if ($argumentName != 'list') {
-            return [];
-        }
-
-        return array_keys($this->config['lists']['lists'] ?? $this->config['lists']);
-    }
-
-    /**
-     * {@inheritDoc}
      */
     protected function configure(): void
     {
@@ -111,7 +85,12 @@ class DefaultCommand extends Command implements CompletionAwareInterface
             ->addArgument(
                 'list',
                 InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-                'Lists to sync. Defaults to all.'
+                'Lists to sync. Defaults to all.',
+                null,
+                fn (): array => array_map(
+                    'strval',
+                    array_keys($this->config['lists']['lists'] ?? $this->config['lists'])
+                )
             );
     }
 
