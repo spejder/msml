@@ -16,25 +16,25 @@ class Enhed
     protected int|string|null $enhedId;
 
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $leaders;
+    protected ?array $leaders = null;
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $leaderlist;
+    protected ?array $leaderlist = null;
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $members;
+    protected ?array $members = null;
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $waitingListMembers;
+    protected ?array $waitingListMembers = null;
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $board;
+    protected ?array $board = null;
 
     /**
      * @var array<int>
@@ -49,10 +49,12 @@ class Enhed
      */
     protected array $gruppekasserer;
 
+    protected bool $gruppeFunktionerLoaded = false;
+
     /**
-     * @var array<int>
+     * @var array<int>|null
      */
-    protected array $webmaster;
+    protected ?array $webmaster = null;
 
 
     protected const BESTYRELSESFORMAND = 233;
@@ -78,11 +80,6 @@ class Enhed
         $this->organizationCode = $organizationCode;
         $this->enhedId = $enhedId;
 
-        $this->leaders = [];
-        $this->leaderlist = [];
-        $this->members = [];
-        $this->board = [];
-
         $this->gruppeleder = [];
         $this->bestyrelsesformand = [];
         $this->gruppekasserer = [];
@@ -96,11 +93,7 @@ class Enhed
     public function getLeaders(): array
     {
         // Preferably use an cached version.
-        if (empty($this->leaders)) {
-            $this->requestLeaders();
-        }
-
-        return $this->leaders;
+        return $this->leaders ??= $this->requestLeaders();
     }
 
     /**
@@ -111,11 +104,7 @@ class Enhed
     public function getLeaderlist(): array
     {
         // Preferably use an cached version.
-        if (empty($this->leaderlist)) {
-            $this->requestLeaderlist();
-        }
-
-        return $this->leaderlist;
+        return $this->leaderlist ??= $this->requestLeaderlist();
     }
 
     /**
@@ -126,11 +115,7 @@ class Enhed
     public function getBoard(): array
     {
         // Preferably use an cached version.
-        if (empty($this->board)) {
-            $this->requestBoard();
-        }
-
-        return $this->board;
+        return $this->board ??= $this->requestBoard();
     }
 
     /**
@@ -141,11 +126,7 @@ class Enhed
     public function getWebmaster(): array
     {
         // Preferably use an cached version.
-        if (empty($this->webmaster)) {
-            $this->requestWebmaster();
-        }
-
-        return $this->webmaster;
+        return $this->webmaster ??= $this->requestWebmaster();
     }
 
     /**
@@ -156,11 +137,7 @@ class Enhed
     public function getMembers(): array
     {
         // Preferably use an cached version.
-        if (empty($this->members)) {
-            $this->requestMembers();
-        }
-
-        return $this->members;
+        return $this->members ??= $this->requestMembers();
     }
 
     /**
@@ -171,11 +148,7 @@ class Enhed
     public function getWaitingListMembers(): array
     {
         // Preferably use an cached version.
-        if (empty($this->waitingListMembers)) {
-            $this->requestWaitingListMembers();
-        }
-
-        return $this->waitingListMembers;
+        return $this->waitingListMembers ??= $this->requestWaitingListMembers();
     }
 
     /**
@@ -186,7 +159,7 @@ class Enhed
     public function getBestyrelsesformand(): array
     {
         // Preferably use an cached version.
-        if (empty($this->bestyrelsesformand)) {
+        if (!$this->gruppeFunktionerLoaded) {
             $this->requestGruppeFunktioner();
         }
 
@@ -201,7 +174,7 @@ class Enhed
     public function getGruppeleder(): array
     {
         // Preferably use an cached version.
-        if (empty($this->gruppeleder)) {
+        if (!$this->gruppeFunktionerLoaded) {
             $this->requestGruppeFunktioner();
         }
 
@@ -216,7 +189,7 @@ class Enhed
     public function getGruppekasserer(): array
     {
         // Preferably use an cached version.
-        if (empty($this->gruppekasserer)) {
+        if (!$this->gruppeFunktionerLoaded) {
             $this->requestGruppeFunktioner();
         }
 
@@ -225,32 +198,39 @@ class Enhed
 
     /**
      * Lookup leaders in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestLeaders(): void
+    protected function requestLeaders(): array
     {
         // Lookup leaders IDs on organization.
         $fields = ['leader_ids'];
         $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
 
-        // Lookup profile IDs from Leaders IDs.
-        $criteria = [
-            ['id', '=', $leaderIds[0]['leader_ids']],
-        ];
-        $functionIds = $this->odooClient->search('member.function', $criteria);
+        if (empty($leaderIds[0]['leader_ids'])) {
+            return [];
+        }
 
+        // Lookup profile IDs from Leaders IDs. Search instead of read
+        // so Odoo filters the functions like it always has.
+        $criteria = [
+            ['id', 'in', $leaderIds[0]['leader_ids']],
+        ];
         $fields = ['profile_id'];
-        $leaders = $this->odooClient->read('member.function', $functionIds, $fields);
+        $leaders = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
         // Only keep the profile ID.
-        $this->leaders = array_map(function ($leader) {
+        return array_map(function ($leader) {
             return $leader['profile_id'][0];
         }, $leaders);
     }
 
     /**
      * Lookup leaderlist in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestLeaderlist(): void
+    protected function requestLeaderlist(): array
     {
         $criteria = [
             '|',
@@ -262,15 +242,17 @@ class Enhed
         $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
         // Only keep the profile ID.
-        $this->leaderlist = array_map(function ($profile) {
+        return array_map(function ($profile) {
             return $profile['profile_id'][0];
         }, $profiles);
     }
 
     /**
      * Lookup board in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestBoard(): void
+    protected function requestBoard(): array
     {
         $criteria = [
             ['organization_id', 'child_of', $this->organizationCode],
@@ -282,15 +264,17 @@ class Enhed
         $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
         // Only keep the profile ID.
-        $this->board = array_map(function ($profile) {
+        return array_map(function ($profile) {
             return $profile['profile_id'][0];
         }, $profiles);
     }
 
     /**
      * Lookup webmasters in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestWebmaster(): void
+    protected function requestWebmaster(): array
     {
         $criteria = [
             ['organization_id', 'child_of', $this->organizationCode],
@@ -300,15 +284,17 @@ class Enhed
         $profiles = $this->odooClient->searchRead('member.function', $criteria, $fields);
 
         // Only keep the profile ID.
-        $this->webmaster = array_map(function ($profile) {
+        return array_map(function ($profile) {
             return $profile['profile_id'][0];
         }, $profiles);
     }
 
     /**
      * Lookup members in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestMembers(): void
+    protected function requestMembers(): array
     {
         // @todo filtrer ledere fra -- nedenstående virker ikke
         // delvist ikke pga ledere oftest _er_ medlemer (udover
@@ -318,19 +304,21 @@ class Enhed
             ['state', '=', 'active'],
             ['member_id.function_ids.leader_function', '!=', true],
         ];
-        $this->members = $this->odooClient->search('member.profile', $criteria);
+        return $this->odooClient->search('member.profile', $criteria);
     }
 
     /**
      * Lookup waiting list members in Odoo.
+     *
+     * @return array<int>
      */
-    protected function requestWaitingListMembers(): void
+    protected function requestWaitingListMembers(): array
     {
         $criteria = [
             ['preliminary_organization_id', '=', $this->organizationCode],
             ['state', '=', 'waiting'],
         ];
-        $this->waitingListMembers = $this->odooClient->search('member.profile', $criteria);
+        return $this->odooClient->search('member.profile', $criteria);
     }
 
     /**
@@ -338,30 +326,35 @@ class Enhed
      */
     protected function requestGruppeFunktioner(): void
     {
+        $this->gruppeFunktionerLoaded = true;
+        $this->gruppeleder = [];
+        $this->bestyrelsesformand = [];
+        $this->gruppekasserer = [];
+
         $fields = ['leader_ids'];
         $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
 
-        $fields = ['function_type_id', 'member_id'];
+        if (empty($leaderIds[0]['leader_ids'])) {
+            return;
+        }
+
+        $fields = ['function_type_id', 'profile_id'];
         $functions = $this->odooClient->read('member.function', $leaderIds[0]['leader_ids'], $fields);
 
         foreach ($functions as $function) {
-            $criteria = [
-                ['member_id', '=', $function['member_id'][0]],
-            ];
-            $fields = ['id'];
-            $profileId = $this->odooClient->searchRead('member.profile', $criteria, $fields);
+            $profileId = $function['profile_id'][0];
 
             switch ($function['function_type_id'][0]) {
                 case self::BESTYRELSESFORMAND:
-                    $this->bestyrelsesformand[] = $profileId[0]['id'];
+                    $this->bestyrelsesformand[] = $profileId;
                     break;
 
                 case self::GRUPPELEDER:
-                    $this->gruppeleder[] = $profileId[0]['id'];
+                    $this->gruppeleder[] = $profileId;
                     break;
 
                 case self::GRUPPEKASSERER:
-                    $this->gruppekasserer[] = $profileId[0]['id'];
+                    $this->gruppekasserer[] = $profileId;
                     break;
             }
         }

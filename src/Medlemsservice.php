@@ -75,16 +75,50 @@ class Medlemsservice extends Odoo
     }
 
     /**
+     * Search models.
+     *
+     * The parent defaults to a limit of 100 which would silently cut
+     * off big units. Odoo treats a limit of 0 as no limit.
+     *
+     * {@inheritDoc}
+     */
+    public function search(string $model, array $data, int $offset = 0, int $limit = 0): array
+    {
+        return parent::search($model, $data, $offset, $limit);
+    }
+
+    /**
+     * Search and read models.
+     *
+     * The parent defaults to a limit of 100 which would silently cut
+     * off big units. Odoo treats a limit of 0 as no limit.
+     *
+     * {@inheritDoc}
+     */
+    public function searchRead(
+        string $model,
+        array $data = [],
+        array $fields = [],
+        int $offset = 0,
+        int $limit = 0
+    ): array {
+        return parent::searchRead($model, $data, $fields, $offset, $limit);
+    }
+
+    /**
      * Get XmlRpc Client
      *
      * Create a HTTP Client and set the timeout before getting the
      * client from our parent (Odoo).
      *
+     * Keep alive is on by default so all calls to an endpoint reuse
+     * one connection instead of doing a new TLS handshake per call.
+     *
      * {@inheritDoc}
      */
     protected function getClient(?string $path = null): XmlRpcClient
     {
-        $this->httpClient = new HttpClient();
+        $this->httpClient = new HttpClient(null, ['keepalive' => true]);
         if (!empty($this->config['config']['odoo']['client_options'])) {
             $this->httpClient->setOptions($this->config['config']['odoo']['client_options']);
         }

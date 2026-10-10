@@ -19,6 +19,14 @@ class Enheder
     protected array $collection;
 
     /**
+     * The same Enhed can be looked up by different fields. Keep one
+     * object per Odoo ID so they share the cached lookups.
+     *
+     * @var array<int, Enhed>
+     */
+    protected array $byOdooId;
+
+    /**
      * Construct using an Odoo Client.
      *
      * @param \Spejder\Odoo\Odoo $odooClient The Odoo Client to use for lookups.
@@ -27,6 +35,7 @@ class Enheder
     {
         $this->odooClient = $odooClient;
         $this->collection = [];
+        $this->byOdooId = [];
     }
 
     /**
@@ -75,7 +84,9 @@ class Enheder
             return null;
         }
 
-        $this->collection[$field][$value] = new Enhed($this->odooClient, reset($organizationCode), $value);
+        $odooId = reset($organizationCode);
+        $this->byOdooId[$odooId] ??= new Enhed($this->odooClient, $odooId, $value);
+        $this->collection[$field][$value] = $this->byOdooId[$odooId];
 
         return $this->collection[$field][$value];
     }
