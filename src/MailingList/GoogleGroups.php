@@ -30,6 +30,25 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GoogleGroups extends AbstractMailingList implements MailingListInterface
 {
+    /**
+     * The Google client shared by all lists in a run, so they share the
+     * OAuth token and the connections.
+     */
+    protected static ?GoogleClient $client = null;
+
+    /**
+     * All groups by lowercased email, loaded once per run. NULL until
+     * loaded, and empty if they could not be loaded.
+     *
+     * @var array<string, array{name: string, description: string, aliases: array<string>}>|null
+     */
+    protected static ?array $groups = null;
+
+    /**
+     * Max number of membership changes in one batch request.
+     */
+    protected const BATCH_SIZE = 50;
+
     protected CloudIdentity $cloudIdentity;
     protected Directory $directory;
     protected Groupssettings $groupsSettings;
@@ -57,6 +76,105 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     {
         parent::__construct($listName, $addresses, $config, $output);
 
+        $client = $this->getClient();
+
+        $this->cloudIdentity = new CloudIdentity($client);
+        $this->directory = new Directory($client);
+        $this->groupsSettings = new Groupssettings($client);
+
+        $group = $this->getGroups()[strtolower($this->listName)] ?? null;
+
+        if ($group !== null) {
+            $this->groupName = $group['name'];
+            $this->syncDescription($group['description']);
+            $this->syncAliases($group['aliases']);
+
+            return;
+        }
+
+        // The group was not in the list of groups. Look it up on its own.
+        try {
+            $this->groupName = $this->lookupGroupName();
+        } catch (GoogleServiceException $e) {
+            if (
+                in_array($e->getCode(), [403, 404]) &&
+                    ($this->config['config']['google-groups']['auto-create-groups'] ?? false)
+            ) {
+                $this->createList();
+            } else {
+                throw $e;
+            }
+        }
+
+        if ($this->groupName !== null) {
+            // A group without a description returns NULL, despite the docblock.
+            $this->syncDescription((string) $this->cloudIdentity->groups->get($this->groupName)->getDescription());
+        }
+
+        $this->syncAliases($this->lookupAliases());
+    }
+
+    /**
+     * Get all groups with their Cloud Identity name, description and aliases.
+     *
+     * The groups are loaded with the Directory API on first use, so each
+     * list does not need its own calls to look them up.
+     *
+     * @return array<string, array{name: string, description: string, aliases: array<string>}>
+     */
+    protected function getGroups(): array
+    {
+        if (self::$groups !== null) {
+            return self::$groups;
+        }
+
+        $customerId = $this->config['config']['google-groups']['customer-id'] ?? null;
+        $groups = [];
+        $pageToken = null;
+
+        try {
+            do {
+                $params = [
+                    'customer' => empty($customerId) ? 'my_customer' : $customerId,
+                    'maxResults' => 200,
+                ];
+                if (is_string($pageToken)) {
+                    $params['pageToken'] = $pageToken;
+                }
+
+                $data = $this->directory->groups->listGroups($params);
+
+                foreach ($data->getGroups() ?? [] as $group) {
+                    // The Cloud Identity group ID is the Directory group ID.
+                    $groups[strtolower($group->getEmail())] = [
+                        'name' => 'groups/' . $group->getId(),
+                        'description' => (string) $group->getDescription(),
+                        'aliases' => $group->getAliases() ?? [],
+                    ];
+                }
+
+                $pageToken = $data->getNextPageToken();
+            } while (!empty($pageToken));
+        } catch (GoogleServiceException $e) {
+            $this->output->writeln(
+                'Unable to list groups. Looking up each group on its own: ' . $e->getMessage(),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            $groups = [];
+        }
+
+        return self::$groups = $groups;
+    }
+
+    /**
+     * Get the Google client. It is created once and shared by all lists.
+     */
+    protected function getClient(): GoogleClient
+    {
+        if (self::$client !== null) {
+            return self::$client;
+        }
+
         $client = new GoogleClient();
         $client->setAuthConfig($this->config['config']['google-groups']['service-account-file']);
         $client->addScope([
@@ -74,28 +192,7 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
             $client->setSubject($this->config['config']['google-groups']['subject']);
         }
 
-        $this->cloudIdentity = new CloudIdentity($client);
-        $this->directory = new Directory($client);
-        $this->groupsSettings = new Groupssettings($client);
-
-        try {
-            $this->groupName = $this->lookupGroupName();
-        } catch (GoogleServiceException $e) {
-            if (
-                in_array($e->getCode(), [403, 404]) &&
-                    ($this->config['config']['google-groups']['auto-create-groups'] ?? false)
-            ) {
-                $this->createList();
-            } else {
-                throw $e;
-            }
-        }
-
-        if ($this->groupName !== null) {
-            $this->syncDescription($this->cloudIdentity->groups->get($this->groupName));
-        }
-
-        $this->syncAliases();
+        return self::$client = $client;
     }
 
     /**
@@ -179,11 +276,19 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected function unsubscribe(array $unsubscribers): void
     {
-        foreach ($unsubscribers as $unsubscriber) {
-            if (!$this->config['dry-run']) {
-                $this->cloudIdentity->groups_memberships->delete($this->membershipNames[$unsubscriber]);
-            }
+        if ($this->config['dry-run']) {
+            return;
         }
+
+        $this->sendInBatches(
+            $unsubscribers,
+            fn (string $unsubscriber): mixed => $this->cloudIdentity->groups_memberships->delete(
+                $this->membershipNames[$unsubscriber]
+            ),
+            function (string $unsubscriber, GoogleServiceException $e): void {
+                throw $e;
+            },
+        );
     }
 
     /**
@@ -191,33 +296,80 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected function subscribe(array $subscribers): void
     {
-        foreach ($subscribers as $subscriber) {
-            $membership = new Membership([
-                'preferredMemberKey' => new EntityKey(['id' => $subscriber]),
-                'roles' => [new MembershipRole(['name' => 'MEMBER'])],
-            ]);
+        if ($this->config['dry-run']) {
+            return;
+        }
 
-            if (!$this->config['dry-run']) {
-                try {
-                    $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
-                } catch (GoogleServiceException $e) {
-                    if ($e->getCode() === 404) {
-                        $this->output->writeln(
-                            'Error adding subscriber: ' . $e->getMessage(),
-                            OutputInterface::VERBOSITY_QUIET,
-                        );
-                    } else {
-                        throw $e;
-                    }
+        $this->sendInBatches(
+            $subscribers,
+            function (string $subscriber): mixed {
+                $membership = new Membership([
+                    'preferredMemberKey' => new EntityKey(['id' => $subscriber]),
+                    'roles' => [new MembershipRole(['name' => 'MEMBER'])],
+                ]);
+
+                return $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
+            },
+            function (string $subscriber, GoogleServiceException $e): void {
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
+
+                $this->output->writeln(
+                    'Error adding subscriber: ' . $e->getMessage(),
+                    OutputInterface::VERBOSITY_QUIET,
+                );
+            },
+        );
+    }
+
+    /**
+     * Send one membership request per address in batch requests.
+     *
+     * @param array<string> $addresses The addresses to send a request for.
+     * @param callable(string): mixed $request Makes the request for an address. In batch mode the
+     *   client returns the request instead of sending it.
+     * @param callable(string, GoogleServiceException): void $onError Handles a failed request.
+     */
+    protected function sendInBatches(array $addresses, callable $request, callable $onError): void
+    {
+        $client = $this->getClient();
+
+        foreach (array_chunk(array_values($addresses), self::BATCH_SIZE) as $chunk) {
+            $client->setUseBatch(true);
+
+            try {
+                $batch = $this->cloudIdentity->createBatch();
+
+                // Batch::add() makes a random key for keys that are
+                // loosely false, i.e. "0", so prefix the index.
+                foreach ($chunk as $i => $address) {
+                    $batch->add($request($address), "m{$i}");
+                }
+
+                $results = $batch->execute() ?? [];
+            } finally {
+                $client->setUseBatch(false);
+            }
+
+            foreach ($chunk as $i => $address) {
+                if (!array_key_exists("response-m{$i}", $results)) {
+                    throw new \RuntimeException("No response in batch request for {$address}.");
+                }
+
+                if ($results["response-m{$i}"] instanceof GoogleServiceException) {
+                    $onError($address, $results["response-m{$i}"]);
                 }
             }
         }
     }
 
     /**
-     * Sync aliases.
+     * Look up the current aliases of the group.
+     *
+     * @return array<string>
      */
-    protected function syncAliases(): void
+    protected function lookupAliases(): array
     {
         $currentAliases = [];
 
@@ -229,6 +381,16 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
             }
         }
 
+        return $currentAliases;
+    }
+
+    /**
+     * Sync aliases.
+     *
+     * @param array<string> $currentAliases The current aliases of the group.
+     */
+    protected function syncAliases(array $currentAliases): void
+    {
         $aliases = $this->config['lists']['lists'][$this->listName]['aliases'] ?? [];
 
         $remove = array_diff($currentAliases, $aliases);
@@ -266,13 +428,14 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
 
     /**
      * Sync description.
+     *
+     * @param string $currentDescription The current description of the group.
      */
-    protected function syncDescription(Group $group): void
+    protected function syncDescription(string $currentDescription): void
     {
         $description = $this->getGroupDescription();
 
-        // A group without a description returns NULL, despite the docblock.
-        if ((string) $group->getDescription() === $description) {
+        if ($currentDescription === $description) {
             return;
         }
 
