@@ -75,6 +75,37 @@ class Medlemsservice extends Odoo
     }
 
     /**
+     * Search models.
+     *
+     * The parent defaults to a limit of 100 which would silently cut
+     * off big units. Odoo treats a limit of 0 as no limit.
+     *
+     * {@inheritDoc}
+     */
+    public function search(string $model, array $data, int $offset = 0, int $limit = 0): array
+    {
+        return parent::search($model, $data, $offset, $limit);
+    }
+
+    /**
+     * Search and read models.
+     *
+     * The parent defaults to a limit of 100 which would silently cut
+     * off big units. Odoo treats a limit of 0 as no limit.
+     *
+     * {@inheritDoc}
+     */
+    public function searchRead(
+        string $model,
+        array $data = [],
+        array $fields = [],
+        int $offset = 0,
+        int $limit = 0
+    ): array {
+        return parent::searchRead($model, $data, $fields, $offset, $limit);
+    }
+
+    /**
      * Get XmlRpc Client
      *
      * Create a HTTP Client and set the timeout before getting the
