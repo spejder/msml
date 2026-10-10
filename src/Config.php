@@ -75,7 +75,7 @@ class Config implements \ArrayAccess
             if (is_string($overrideListsFileContent)) {
                 $this->config['lists'] = array_merge(
                     $this->config['lists'],
-                    $yamlParser->parse($overrideListsFile)
+                    $yamlParser->parse($overrideListsFileContent)
                 );
             }
         } catch (\InvalidArgumentException $e) {
