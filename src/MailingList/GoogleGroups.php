@@ -13,6 +13,8 @@ use Google\Service\CloudIdentity\MembershipRole;
 use Google\Service\Directory;
 use Google\Service\Directory\Alias;
 use Google\Service\Exception as GoogleServiceException;
+use Google\Service\Groupssettings;
+use Google\Service\Groupssettings\Groups as GroupSettings;
 use MSML\Config;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -21,7 +23,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * Groups and members are handled by the Cloud Identity Groups API. Aliases
  * are handled by the Admin SDK Directory API, as Cloud Identity can't
- * manage them.
+ * manage them. Group settings are handled by the Groups Settings API, as
+ * Cloud Identity can't manage them either.
  *
  * Lists must be named with their mail address 'foo@example.com'.
  */
@@ -29,6 +32,7 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
 {
     protected CloudIdentity $cloudIdentity;
     protected Directory $directory;
+    protected Groupssettings $groupsSettings;
 
     /**
      * Cloud Identity resource name of the group ('groups/{id}').
@@ -60,12 +64,19 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
             Directory::ADMIN_DIRECTORY_GROUP,
         ]);
 
+        // Only auto create uses the Groups Settings API. Asking for the scope
+        // otherwise would break domain-wide delegation setups without it.
+        if ($this->config['config']['google-groups']['auto-create-groups'] ?? false) {
+            $client->addScope(Groupssettings::APPS_GROUPS_SETTINGS);
+        }
+
         if (isset($this->config['config']['google-groups']['subject'])) {
             $client->setSubject($this->config['config']['google-groups']['subject']);
         }
 
         $this->cloudIdentity = new CloudIdentity($client);
         $this->directory = new Directory($client);
+        $this->groupsSettings = new Groupssettings($client);
 
         try {
             $this->groupName = $this->lookupGroupName();
@@ -117,12 +128,20 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
 
         if ($this->config['dry-run']) {
             $this->output->writeln('Would auto create group: ' . print_r($group->toSimpleObject(), true));
+            $this->output->writeln('Would allow external members in group: ' . $this->listName);
             return;
         }
 
         $this->cloudIdentity->groups->create($group, ['initialGroupConfig' => 'EMPTY']);
 
         $this->groupName = $this->lookupGroupName();
+
+        // New groups don't allow external members, and most of our members
+        // are external. The Groups Settings API wants a string, not a bool.
+        $this->groupsSettings->groups->patch(
+            $this->listName,
+            new GroupSettings(['allowExternalMembers' => 'true']),
+        );
     }
 
     /**

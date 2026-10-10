@@ -53,7 +53,8 @@
     "extra": {
         "google/apiclient-services": [
             "CloudIdentity",
-            "Directory"
+            "Directory",
+            "Groupssettings"
         ]
     },
     "config": {
