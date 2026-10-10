@@ -16,6 +16,14 @@ class Enhed
     protected int|string|null $enhedId;
 
     /**
+     * IDs of the leader functions (member.function). NULL until they
+     * are looked up.
+     *
+     * @var array<int>|null
+     */
+    protected ?array $leaderIds;
+
+    /**
      * @var array<int>|null
      */
     protected ?array $leaders = null;
@@ -73,12 +81,18 @@ class Enhed
      * @param Odoo   $odooClient       The Odoo Client to use for later lookups.
      * @param int    $organizationCode The organization code.
      * @param int|string|null $enhedId          The Enhed ID (i.e. "2227-5").
+     * @param array<int>|null $leaderIds        The leader_ids if already known.
      */
-    public function __construct(Odoo $odooClient, int $organizationCode, int|string|null $enhedId = null)
-    {
+    public function __construct(
+        Odoo $odooClient,
+        int $organizationCode,
+        int|string|null $enhedId = null,
+        ?array $leaderIds = null
+    ) {
         $this->odooClient = $odooClient;
         $this->organizationCode = $organizationCode;
         $this->enhedId = $enhedId;
+        $this->leaderIds = $leaderIds;
 
         $this->gruppeleder = [];
         $this->bestyrelsesformand = [];
@@ -94,6 +108,16 @@ class Enhed
     {
         // Preferably use an cached version.
         return $this->leaders ??= $this->requestLeaders();
+    }
+
+    /**
+     * Set the leaders when they are looked up elsewhere.
+     *
+     * @param array<int> $profileIds The profile IDs of the leaders.
+     */
+    public function setLeaders(array $profileIds): void
+    {
+        $this->leaders = $profileIds;
     }
 
     /**
@@ -197,24 +221,38 @@ class Enhed
     }
 
     /**
+     * Get the IDs of the leader functions on the organization.
+     *
+     * @return array<int>
+     */
+    protected function getLeaderIds(): array
+    {
+        if ($this->leaderIds === null) {
+            $fields = ['leader_ids'];
+            $organizations = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
+            $this->leaderIds = $organizations[0]['leader_ids'] ?? [];
+        }
+
+        return $this->leaderIds;
+    }
+
+    /**
      * Lookup leaders in Odoo.
      *
      * @return array<int>
      */
     protected function requestLeaders(): array
     {
-        // Lookup leaders IDs on organization.
-        $fields = ['leader_ids'];
-        $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
+        $leaderIds = $this->getLeaderIds();
 
-        if (empty($leaderIds[0]['leader_ids'])) {
+        if (empty($leaderIds)) {
             return [];
         }
 
         // Lookup profile IDs from Leaders IDs. Search instead of read
         // so Odoo filters the functions like it always has.
         $criteria = [
-            ['id', 'in', $leaderIds[0]['leader_ids']],
+            ['id', 'in', $leaderIds],
         ];
         $fields = ['profile_id'];
         $leaders = $this->odooClient->searchRead('member.function', $criteria, $fields);
@@ -331,15 +369,14 @@ class Enhed
         $this->bestyrelsesformand = [];
         $this->gruppekasserer = [];
 
-        $fields = ['leader_ids'];
-        $leaderIds = $this->odooClient->read('member.organization', [0 => $this->organizationCode], $fields);
+        $leaderIds = $this->getLeaderIds();
 
-        if (empty($leaderIds[0]['leader_ids'])) {
+        if (empty($leaderIds)) {
             return;
         }
 
         $fields = ['function_type_id', 'profile_id'];
-        $functions = $this->odooClient->read('member.function', $leaderIds[0]['leader_ids'], $fields);
+        $functions = $this->odooClient->read('member.function', $leaderIds, $fields);
 
         foreach ($functions as $function) {
             $profileId = $function['profile_id'][0];
