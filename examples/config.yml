@@ -27,8 +27,17 @@ mlmmj:
 # project of the service account. Groups and members use the Cloud Identity
 # API. Aliases use the Admin SDK Directory API.
 #
+# If auto-create-groups is true, also enable the Groups Settings API. MSML
+# uses it to allow external members in the groups that it creates.
+#
 # Give the service account the Groups Admin role in the Admin console, or
-# set "subject" to use domain-wide delegation.
+# set "subject" to use domain-wide delegation. With domain-wide delegation,
+# authorize these scopes for the service account in the Admin console:
+#
+#   https://www.googleapis.com/auth/cloud-identity.groups
+#   https://www.googleapis.com/auth/admin.directory.group
+#   https://www.googleapis.com/auth/apps.groups.settings (only if
+#   auto-create-groups is true)
 #google-groups:
 #  # Path to the service account key file:
 #  service-account-file: account.json
