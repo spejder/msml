@@ -124,17 +124,14 @@ class DefaultCommand extends Command
 
         $this->config['dry-run'] = $input->getOption('dry-run');
 
-        // Always set summary-file so lists can rely on it being present.
-        $this->config['summary-file'] = null;
-
         $summaryFile = null;
         $summaryFileName = $input->getOption('summary-file');
         if (is_string($summaryFileName) && $summaryFileName !== '') {
-            $summaryFile = fopen($summaryFileName, 'w');
-            if (is_resource($summaryFile)) {
-                $this->config['summary-file'] = $summaryFile;
-            }
+            $summaryFile = fopen($summaryFileName, 'w') ?: null;
         }
+
+        // Always set summary-file so lists can rely on it being present.
+        $this->config['summary-file'] = $summaryFile;
 
         if (empty($lists)) {
             throw new \RuntimeException('No lists configured.');
