@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace MSML;
 
 use Email\Parse;
-use Spejder\Odoo\Odoo;
 
 /**
  * Profile.
+ *
+ * Profiles are loaded by \MSML\Profiles which does all the lookups in
+ * Odoo.
  */
 class Profile
 {
-    protected Odoo $odooClient;
     protected Profiles $profiles;
     protected int $profileId;
 
@@ -24,29 +25,35 @@ class Profile
     protected array $relationPartnerIds;
 
     /**
-     * @var array<int>
+     * Profile IDs of the relatives. NULL until they are looked up.
+     *
+     * @var array<int>|null
      */
-    protected array $relationProfileIds;
-
-    // Hard coded medlemssystem value.
-    protected const TYPE_CHILD_OF = 9;
+    protected ?array $relationProfileIds = null;
 
     /**
-     * Construct but lazy load most stuff.
+     * Construct from a member.profile record from Odoo.
      *
-     * @param Odoo     $odooClient The Odoo Client to use for later lookups.
-     * @param Profiles $profiles   The profiles storage.
-     * @param int      $profileId  The organization code.
+     * @param Profiles $profiles The profiles storage.
+     * @param array<string, mixed> $data The fields "id", "email", and "relation_all_ids".
      */
-    public function __construct(Odoo $odooClient, Profiles $profiles, int $profileId)
+    public function __construct(Profiles $profiles, array $data)
     {
-        $this->odooClient = $odooClient;
         $this->profiles = $profiles;
-        $this->profileId = $profileId;
+        $this->profileId = $data['id'];
 
-        $this->mail = null;
-        $this->relationPartnerIds = [];
-        $this->relationProfileIds = [];
+        $mail = is_string($data['email']) ? $data['email'] : '';
+        $parsedMail = Parse::getInstance()->parse($mail);
+        $this->mail = $parsedMail['success'] ? reset($parsedMail['email_addresses'])['simple_address'] : null;
+        $this->relationPartnerIds = $data['relation_all_ids'];
+    }
+
+    /**
+     * Get the profile ID.
+     */
+    public function getId(): int
+    {
+        return $this->profileId;
     }
 
     /**
@@ -54,11 +61,35 @@ class Profile
      */
     public function getMail(): ?string
     {
-        if (empty($this->mail)) {
-            $this->extractProfile();
-        }
-
         return $this->mail;
+    }
+
+    /**
+     * Get the IDs of the relations (res.partner.relation.all).
+     *
+     * @return array<int>
+     */
+    public function getRelationPartnerIds(): array
+    {
+        return $this->relationPartnerIds;
+    }
+
+    /**
+     * Whether the relatives are looked up already.
+     */
+    public function hasRelationProfileIds(): bool
+    {
+        return $this->relationProfileIds !== null;
+    }
+
+    /**
+     * Set the profile IDs of the relatives.
+     *
+     * @param array<int> $profileIds
+     */
+    public function setRelationProfileIds(array $profileIds): void
+    {
+        $this->relationProfileIds = $profileIds;
     }
 
     /**
@@ -68,66 +99,15 @@ class Profile
      */
     public function getRelationMails(): array
     {
-        $this->expandRelations();
+        if ($this->relationProfileIds === null) {
+            $this->profiles->prefetchRelatives([$this->profileId]);
+        }
+
         $result = [];
-        foreach ($this->relationProfileIds as $profileId) {
-            $result[] = $this->profiles->getById($profileId)->getMail();
+        foreach ($this->relationProfileIds ?? [] as $profileId) {
+            $result[] = $this->profiles->getById($profileId)?->getMail();
         }
 
         return array_filter($result);
-    }
-
-    /**
-     * Extract profile from Odoo.
-     */
-    protected function extractProfile(): void
-    {
-        $fields = ['email', 'relation_all_ids'];
-        $profiles = $this->odooClient->read('member.profile', [$this->profileId], $fields);
-        $profile = reset($profiles);
-
-        $mail = is_string($profile['email']) ? $profile['email'] : '';
-        $parsedMail = Parse::getInstance()->parse($mail);
-        $this->mail = $parsedMail['success'] ? reset($parsedMail['email_addresses'])['simple_address'] : null;
-        $this->relationPartnerIds = $profile['relation_all_ids'];
-    }
-
-    /**
-     * Expand Relation Partner IDs into their Profile IDs.
-     */
-    protected function expandRelations(): void
-    {
-        // Bail out early if already expanded.
-        if (!empty($this->relationProfileIds)) {
-            return;
-        }
-
-        // If the profile data has not been extracted from Odoo yet
-        // do it now.
-        if (empty($this->relationPartnerIds)) {
-            $this->extractProfile();
-        }
-
-        $fields = ['id', 'other_partner_id', 'this_primary_contact', 'type_selection_id'];
-        $relations = $this->odooClient->read('res.partner.relation.all', $this->relationPartnerIds, $fields);
-
-        // @todo Since we do a search below there is maybe no need to
-        // repeat it in a foreach loop. Refactor?
-        foreach ($relations as $relation) {
-            if (($relation['this_primary_contact']) && (self::TYPE_CHILD_OF == $relation['type_selection_id'][0])) {
-                $criteria = [
-                    ['partner_id', '=', $relation['other_partner_id'][0]],
-                ];
-                $profiles = $this->odooClient->search('member.profile', $criteria);
-
-                $profile = reset($profiles);
-
-                if (!is_int($profile)) {
-                    continue;
-                }
-
-                $this->relationProfileIds[] = $profile;
-            }
-        }
     }
 }

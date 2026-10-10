@@ -8,6 +8,7 @@ use MSML\Config;
 use MSML\Enhed;
 use MSML\Enheder;
 use MSML\MailingList\MailingListFactory;
+use MSML\Profile;
 use MSML\Profiles;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Command\Command;
@@ -145,9 +146,28 @@ class DefaultCommand extends Command
             }, ARRAY_FILTER_USE_KEY);
         }
 
+        // Find the profiles each list selects.
+        $selections = [];
         foreach ($lists as $listName => $list) {
-            $addresses = [];
+            $selections[$listName] = $this->selectProfiles($list['select'], $enheder);
+        }
 
+        // Load all the selected profiles from Medlemsservice in as few
+        // calls as possible before we start saving lists.
+        $profileIds = [];
+        $relativesProfileIds = [];
+        foreach (array_merge([], ...array_values($selections)) as $selection) {
+            array_push($profileIds, ...$selection['profileIds']);
+
+            if ($selection['relatives']) {
+                array_push($relativesProfileIds, ...$selection['profileIds']);
+            }
+        }
+
+        $profiles->prefetch($profileIds);
+        $profiles->prefetchRelatives($relativesProfileIds);
+
+        foreach ($lists as $listName => $list) {
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
                 $output->writeln("<list>{$list['description']}</list>");
             }
@@ -156,50 +176,7 @@ class DefaultCommand extends Command
                 fwrite($summaryFile, "### {$listName} &ndash; {$list['description']}\n");
             }
 
-            foreach ($list['select'] as $conf) {
-                if (!empty($conf['org'])) {
-                    $enhed = $enheder->getByOrganizationCode($conf['org']);
-                } else {
-                    $enhed = $enheder->getById($conf['id']);
-                }
-
-                if (!$enhed instanceof Enhed) {
-                    continue;
-                }
-
-                $callable = [$enhed, 'get' . ucfirst($conf['type'])];
-
-                if (!is_callable($callable)) {
-                    continue;
-                }
-
-                $profileIds = call_user_func($callable);
-
-                // If type is members we need to filter out leaders.
-                if ('members' == $conf['type']) {
-                    $leaders = $enhed->getLeaders();
-                    $profileIds = array_diff($profileIds, $leaders);
-                }
-
-                $mails = array_map(function ($profileId) use ($profiles, $conf) {
-                    $profile = $profiles->getById($profileId);
-                    $mail = $profile->getMail();
-
-                    if (empty($conf['relatives'])) {
-                        return array_filter([$mail]);
-                    }
-
-                    $relmails = $profile->getRelationMails();
-
-                    return array_filter(array_merge($relmails, [$mail]));
-                }, $profileIds);
-
-                if (!empty($mails)) {
-                    $mails = call_user_func_array('array_merge', array_values($mails));
-                }
-
-                $addresses = array_unique(array_merge($mails, $addresses));
-            }
+            $addresses = $this->collectAddresses($selections[$listName], $profiles);
 
             $list = $this->listFactory->create($listName, $addresses, $this->config, $output);
             $list->save();
@@ -214,5 +191,92 @@ class DefaultCommand extends Command
         }
 
         return 0;
+    }
+
+    /**
+     * Find the profiles selected by the select part of a list.
+     *
+     * @param array<array<string, mixed>> $select The select part of a list.
+     * @param Enheder $enheder The Enheder to lookup in.
+     *
+     * @return array<array{profileIds: array<int>, relatives: bool}>
+     */
+    protected function selectProfiles(array $select, Enheder $enheder): array
+    {
+        $selections = [];
+
+        foreach ($select as $conf) {
+            if (!empty($conf['org'])) {
+                $enhed = $enheder->getByOrganizationCode($conf['org']);
+            } else {
+                $enhed = $enheder->getById($conf['id']);
+            }
+
+            if (!$enhed instanceof Enhed) {
+                continue;
+            }
+
+            $callable = [$enhed, 'get' . ucfirst($conf['type'])];
+
+            if (!is_callable($callable)) {
+                continue;
+            }
+
+            $profileIds = call_user_func($callable);
+
+            // If type is members we need to filter out leaders.
+            if ('members' == $conf['type']) {
+                $leaders = $enhed->getLeaders();
+                $profileIds = array_diff($profileIds, $leaders);
+            }
+
+            $selections[] = [
+                'profileIds' => array_values($profileIds),
+                'relatives' => !empty($conf['relatives']),
+            ];
+        }
+
+        return $selections;
+    }
+
+    /**
+     * Collect the mail addresses of the selected profiles.
+     *
+     * @param array<array{profileIds: array<int>, relatives: bool}> $selections The selections of a list.
+     * @param Profiles $profiles The profiles to lookup in.
+     *
+     * @return array<string>
+     */
+    protected function collectAddresses(array $selections, Profiles $profiles): array
+    {
+        $addresses = [];
+
+        foreach ($selections as $selection) {
+            $mails = array_map(function ($profileId) use ($profiles, $selection) {
+                $profile = $profiles->getById($profileId);
+
+                if (!$profile instanceof Profile) {
+                    return [];
+                }
+
+                $mail = $profile->getMail();
+
+                if (!$selection['relatives']) {
+                    return array_filter([$mail]);
+                }
+
+                $relmails = $profile->getRelationMails();
+
+                return array_filter(array_merge($relmails, [$mail]));
+            }, $selection['profileIds']);
+
+            if (!empty($mails)) {
+                $mails = call_user_func_array('array_merge', array_values($mails));
+            }
+
+            $addresses = array_unique(array_merge($mails, $addresses));
+        }
+
+        return $addresses;
     }
 }
