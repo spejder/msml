@@ -5,20 +5,44 @@ declare(strict_types=1);
 namespace MSML\MailingList;
 
 use Google\Client as GoogleClient;
+use Google\Service\CloudIdentity;
+use Google\Service\CloudIdentity\EntityKey;
+use Google\Service\CloudIdentity\Group;
+use Google\Service\CloudIdentity\Membership;
+use Google\Service\CloudIdentity\MembershipRole;
 use Google\Service\Directory;
-use GuzzleHttp\ClientInterface as GuzzleClient;
+use Google\Service\Directory\Alias;
+use Google\Service\Exception as GoogleServiceException;
 use MSML\Config;
 use Symfony\Component\Console\Output\OutputInterface;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * A Google Groups mailing list wrapper class.
+ *
+ * Groups and members are handled by the Cloud Identity Groups API. Aliases
+ * are handled by the Admin SDK Directory API, as Cloud Identity can't
+ * manage them.
  *
  * Lists must be named with their mail address 'foo@example.com'.
  */
 class GoogleGroups extends AbstractMailingList implements MailingListInterface
 {
-    protected GuzzleClient $client;
+    protected CloudIdentity $cloudIdentity;
+    protected Directory $directory;
+
+    /**
+     * Cloud Identity resource name of the group ('groups/{id}').
+     *
+     * NULL if the group doesn't exist (only on dry-run with auto create).
+     */
+    protected ?string $groupName = null;
+
+    /**
+     * Map of member email to Cloud Identity membership resource name.
+     *
+     * @var array<string, string>
+     */
+    protected array $membershipNames = [];
 
     /**
      * Create list based on list name and addresses.
@@ -29,27 +53,23 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     {
         parent::__construct($listName, $addresses, $config, $output);
 
-        putenv("GOOGLE_APPLICATION_CREDENTIALS={$this->config['config']['google-groups']['service-account-file']}");
-
         $client = new GoogleClient();
-        $client->useApplicationDefaultCredentials();
-        $client->addScope(Directory::ADMIN_DIRECTORY_GROUP);
+        $client->setAuthConfig($this->config['config']['google-groups']['service-account-file']);
+        $client->addScope([
+            CloudIdentity::CLOUD_IDENTITY_GROUPS,
+            Directory::ADMIN_DIRECTORY_GROUP,
+        ]);
 
         if (isset($this->config['config']['google-groups']['subject'])) {
             $client->setSubject($this->config['config']['google-groups']['subject']);
         }
 
-        $this->client = $client->authorize();
-
+        $this->cloudIdentity = new CloudIdentity($client);
+        $this->directory = new Directory($client);
 
         try {
-            $data = $this->request(
-                'GET',
-                "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}",
-            );
-
-            $this->syncDescription($data);
-        } catch (\Exception $e) {
+            $this->groupName = $this->lookupGroupName();
+        } catch (GoogleServiceException $e) {
             if (
                 in_array($e->getCode(), [403, 404]) &&
                     ($this->config['config']['google-groups']['auto-create-groups'] ?? false)
@@ -60,24 +80,19 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
             }
         }
 
+        if ($this->groupName !== null) {
+            $this->syncDescription($this->cloudIdentity->groups->get($this->groupName));
+        }
+
         $this->syncAliases();
     }
 
     /**
-     * Make request, parse response and throw exception on error.
-     *
-     * @param array<mixed> $options
+     * Look up the Cloud Identity resource name of the group.
      */
-    protected function request(string $method, string $uri, array $options = []): mixed
+    protected function lookupGroupName(): string
     {
-        $response = $this->client->request($method, $uri, $options);
-
-        $data = json_decode($response->getBody()->getContents());
-        if (isset($data->error)) {
-            throw new \Exception($data->error->message ?? 'Unknown error', $data->error->code ?? 0);
-        }
-
-        return $data;
+        return $this->cloudIdentity->groups->lookup(['groupKey.id' => $this->listName])->getName();
     }
 
     /**
@@ -87,52 +102,57 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     {
         $this->output->writeln('Auto creating group: ' . $this->listName, OutputInterface::VERBOSITY_VERBOSE);
 
-        $body = [
-            'email' => $this->listName,
-            'name' => $this->listName,
-            'description' => $this->getGroupDescription(),
-            'kind' => 'admin#directory#group',
-        ];
-
-        if ($this->config['dry-run']) {
-            $this->output->writeln('Would auto create group: ' . print_r($body, true));
+        $customerId = $this->config['config']['google-groups']['customer-id'] ?? null;
+        if (empty($customerId)) {
+            throw new \Exception('google-groups.customer-id must be set to auto create groups.');
         }
 
-        $this->request(
-            'POST',
-            'https://admin.googleapis.com/admin/directory/v1/groups',
-            [
-                'json' => $body,
-            ],
-        );
+        $group = new Group([
+            'parent' => "customers/{$customerId}",
+            'groupKey' => new EntityKey(['id' => $this->listName]),
+            'displayName' => $this->listName,
+            'description' => $this->getGroupDescription(),
+            'labels' => ['cloudidentity.googleapis.com/groups.discussion_forum' => ''],
+        ]);
+
+        if ($this->config['dry-run']) {
+            $this->output->writeln('Would auto create group: ' . print_r($group->toSimpleObject(), true));
+            return;
+        }
+
+        $this->cloudIdentity->groups->create($group, ['initialGroupConfig' => 'EMPTY']);
+
+        $this->groupName = $this->lookupGroupName();
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function currentSubscribers(?string $pageToken = null): void
+    protected function currentSubscribers(): void
     {
-        $endpoint = "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/members";
-        if (is_string($pageToken)) {
-            $endpoint .= "?pageToken={$pageToken}";
-        }
-
-        $data = $this->request(
-            'GET',
-            $endpoint,
-        );
-
-        if (empty($data->members)) {
+        if ($this->groupName === null) {
             return;
         }
 
-        foreach ($data->members as $member) {
-            $this->currentSubscribers[] = strtolower($member->email);
-        }
+        $pageToken = null;
 
-        if (!empty($data->nextPageToken)) {
-            $this->currentSubscribers($data->nextPageToken);
-        }
+        do {
+            $params = ['pageSize' => 1000];
+            if (is_string($pageToken)) {
+                $params['pageToken'] = $pageToken;
+            }
+
+            $data = $this->cloudIdentity->groups_memberships->listGroupsMemberships($this->groupName, $params);
+
+            foreach ($data->getMemberships() ?? [] as $membership) {
+                $email = strtolower($membership->getPreferredMemberKey()->getId());
+
+                $this->currentSubscribers[] = $email;
+                $this->membershipNames[$email] = $membership->getName();
+            }
+
+            $pageToken = $data->getNextPageToken();
+        } while (!empty($pageToken));
     }
 
     /**
@@ -142,10 +162,7 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     {
         foreach ($unsubscribers as $unsubscriber) {
             if (!$this->config['dry-run']) {
-                $this->request(
-                    'DELETE',
-                    "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/members/{$unsubscriber}",
-                );
+                $this->cloudIdentity->groups_memberships->delete($this->membershipNames[$unsubscriber]);
             }
         }
     }
@@ -156,21 +173,15 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     protected function subscribe(array $subscribers): void
     {
         foreach ($subscribers as $subscriber) {
-            $member = [
-                'email' => $subscriber,
-                'kind' => 'admin#directory#member',
-            ];
+            $membership = new Membership([
+                'preferredMemberKey' => new EntityKey(['id' => $subscriber]),
+                'roles' => [new MembershipRole(['name' => 'MEMBER'])],
+            ]);
 
             if (!$this->config['dry-run']) {
                 try {
-                    $this->request(
-                        'POST',
-                        "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/members",
-                        [
-                            'json' => $member,
-                        ],
-                    );
-                } catch (\Exception $e) {
+                    $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
+                } catch (GoogleServiceException $e) {
                     if ($e->getCode() === 404) {
                         $this->output->writeln(
                             'Error adding subscriber: ' . $e->getMessage(),
@@ -189,84 +200,74 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected function syncAliases(): void
     {
-        if ($this->config['dry-run']) {
-            $this->output->writeln('Skiping alias sync on dry-run.');
-        }
-
-        // Get aliases.
-        $data = $this->request(
-            'GET',
-            "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/aliases",
-        );
-
         $currentAliases = [];
-        foreach ($data->aliases ?? [] as $currentAlias) {
-            $currentAliases[] = $currentAlias->alias;
+
+        if ($this->groupName !== null) {
+            $data = $this->directory->groups_aliases->listGroupsAliases($this->listName);
+
+            foreach ($data->getAliases() ?? [] as $currentAlias) {
+                $currentAliases[] = $currentAlias['alias'];
+            }
         }
 
-        $aliases =  $this->config['lists']['lists'][$this->listName]['aliases'] ?? [];
+        $aliases = $this->config['lists']['lists'][$this->listName]['aliases'] ?? [];
+
+        $remove = array_diff($currentAliases, $aliases);
+        $add = array_diff($aliases, $currentAliases);
+
+        if ($this->config['dry-run']) {
+            foreach ($remove as $alias) {
+                $this->output->writeln('Would remove alias: ' . $alias);
+            }
+
+            foreach ($add as $alias) {
+                $this->output->writeln('Would add alias: ' . $alias);
+            }
+
+            return;
+        }
 
         // Remove old aliases
-        $remove = array_diff($currentAliases, $aliases);
-
         foreach ($remove as $alias) {
             $this->output->writeln('Removing alias: ' . $alias, OutputInterface::VERBOSITY_VERBOSE);
 
-            $this->request(
-                'DELETE',
-                "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/aliases/{$alias}",
-            );
+            $this->directory->groups_aliases->delete($this->listName, $alias);
         }
 
         // Add new aliases.
-        $add = array_diff($aliases, $currentAliases);
-
         foreach ($add as $alias) {
             $this->output->writeln('Adding alias: ' . $alias, OutputInterface::VERBOSITY_VERBOSE);
 
-            $body = [
+            $this->directory->groups_aliases->insert($this->listName, new Alias([
                 'primaryEmail' => $this->listName,
                 'alias' => $alias,
-                'kind' => 'admin#directory#alias',
-            ];
-
-            $this->request(
-                'POST',
-                "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}/aliases",
-                [
-                    'json' => $body,
-                ],
-            );
+            ]));
         }
     }
 
     /**
      * Sync description.
      */
-    protected function syncDescription(\stdClass $data): void
+    protected function syncDescription(Group $group): void
     {
         $description = $this->getGroupDescription();
 
-        if ($data->description === $description) {
+        // A group without a description returns NULL, despite the docblock.
+        if ((string) $group->getDescription() === $description) {
             return;
         }
 
         $this->output->writeln('Updating description: ' . $description, OutputInterface::VERBOSITY_VERBOSE);
 
-        $body = [
-            'description' => $description,
-        ];
-
         if ($this->config['dry-run']) {
-            $this->output->writeln('Would update description: ' . print_r($body, true));
+            $this->output->writeln('Would update description: ' . $description);
+            return;
         }
 
-        $this->request(
-            'PATCH',
-            "https://admin.googleapis.com/admin/directory/v1/groups/{$this->listName}",
-            [
-                'json' => $body,
-            ],
+        $this->cloudIdentity->groups->patch(
+            $this->groupName,
+            new Group(['description' => $description]),
+            ['updateMask' => 'description'],
         );
     }
 
