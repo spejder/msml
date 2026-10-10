@@ -36,6 +36,14 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected static ?GoogleClient $client = null;
 
+    /**
+     * All groups by lowercased email, loaded once per run. NULL until
+     * loaded, and empty if they could not be loaded.
+     *
+     * @var array<string, array{name: string, description: string, aliases: array<string>}>|null
+     */
+    protected static ?array $groups = null;
+
     protected CloudIdentity $cloudIdentity;
     protected Directory $directory;
     protected Groupssettings $groupsSettings;
@@ -69,6 +77,17 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
         $this->directory = new Directory($client);
         $this->groupsSettings = new Groupssettings($client);
 
+        $group = $this->getGroups()[strtolower($this->listName)] ?? null;
+
+        if ($group !== null) {
+            $this->groupName = $group['name'];
+            $this->syncDescription($group['description']);
+            $this->syncAliases($group['aliases']);
+
+            return;
+        }
+
+        // The group was not in the list of groups. Look it up on its own.
         try {
             $this->groupName = $this->lookupGroupName();
         } catch (GoogleServiceException $e) {
@@ -83,10 +102,63 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
         }
 
         if ($this->groupName !== null) {
-            $this->syncDescription($this->cloudIdentity->groups->get($this->groupName));
+            // A group without a description returns NULL, despite the docblock.
+            $this->syncDescription((string) $this->cloudIdentity->groups->get($this->groupName)->getDescription());
         }
 
-        $this->syncAliases();
+        $this->syncAliases($this->lookupAliases());
+    }
+
+    /**
+     * Get all groups with their Cloud Identity name, description and aliases.
+     *
+     * The groups are loaded with the Directory API on first use, so each
+     * list does not need its own calls to look them up.
+     *
+     * @return array<string, array{name: string, description: string, aliases: array<string>}>
+     */
+    protected function getGroups(): array
+    {
+        if (self::$groups !== null) {
+            return self::$groups;
+        }
+
+        $customerId = $this->config['config']['google-groups']['customer-id'] ?? null;
+        $groups = [];
+        $pageToken = null;
+
+        try {
+            do {
+                $params = [
+                    'customer' => empty($customerId) ? 'my_customer' : $customerId,
+                    'maxResults' => 200,
+                ];
+                if (is_string($pageToken)) {
+                    $params['pageToken'] = $pageToken;
+                }
+
+                $data = $this->directory->groups->listGroups($params);
+
+                foreach ($data->getGroups() ?? [] as $group) {
+                    // The Cloud Identity group ID is the Directory group ID.
+                    $groups[strtolower($group->getEmail())] = [
+                        'name' => 'groups/' . $group->getId(),
+                        'description' => (string) $group->getDescription(),
+                        'aliases' => $group->getAliases() ?? [],
+                    ];
+                }
+
+                $pageToken = $data->getNextPageToken();
+            } while (!empty($pageToken));
+        } catch (GoogleServiceException $e) {
+            $this->output->writeln(
+                'Unable to list groups. Looking up each group on its own: ' . $e->getMessage(),
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            $groups = [];
+        }
+
+        return self::$groups = $groups;
     }
 
     /**
@@ -235,9 +307,11 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     }
 
     /**
-     * Sync aliases.
+     * Look up the current aliases of the group.
+     *
+     * @return array<string>
      */
-    protected function syncAliases(): void
+    protected function lookupAliases(): array
     {
         $currentAliases = [];
 
@@ -249,6 +323,16 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
             }
         }
 
+        return $currentAliases;
+    }
+
+    /**
+     * Sync aliases.
+     *
+     * @param array<string> $currentAliases The current aliases of the group.
+     */
+    protected function syncAliases(array $currentAliases): void
+    {
         $aliases = $this->config['lists']['lists'][$this->listName]['aliases'] ?? [];
 
         $remove = array_diff($currentAliases, $aliases);
@@ -286,13 +370,14 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
 
     /**
      * Sync description.
+     *
+     * @param string $currentDescription The current description of the group.
      */
-    protected function syncDescription(Group $group): void
+    protected function syncDescription(string $currentDescription): void
     {
         $description = $this->getGroupDescription();
 
-        // A group without a description returns NULL, despite the docblock.
-        if ((string) $group->getDescription() === $description) {
+        if ($currentDescription === $description) {
             return;
         }
 
