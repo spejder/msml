@@ -30,6 +30,12 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GoogleGroups extends AbstractMailingList implements MailingListInterface
 {
+    /**
+     * The Google client shared by all lists in a run, so they share the
+     * OAuth token and the connections.
+     */
+    protected static ?GoogleClient $client = null;
+
     protected CloudIdentity $cloudIdentity;
     protected Directory $directory;
     protected Groupssettings $groupsSettings;
@@ -57,22 +63,7 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
     {
         parent::__construct($listName, $addresses, $config, $output);
 
-        $client = new GoogleClient();
-        $client->setAuthConfig($this->config['config']['google-groups']['service-account-file']);
-        $client->addScope([
-            CloudIdentity::CLOUD_IDENTITY_GROUPS,
-            Directory::ADMIN_DIRECTORY_GROUP,
-        ]);
-
-        // Only auto create uses the Groups Settings API. Asking for the scope
-        // otherwise would break domain-wide delegation setups without it.
-        if ($this->config['config']['google-groups']['auto-create-groups'] ?? false) {
-            $client->addScope(Groupssettings::APPS_GROUPS_SETTINGS);
-        }
-
-        if (isset($this->config['config']['google-groups']['subject'])) {
-            $client->setSubject($this->config['config']['google-groups']['subject']);
-        }
+        $client = $this->getClient();
 
         $this->cloudIdentity = new CloudIdentity($client);
         $this->directory = new Directory($client);
@@ -96,6 +87,35 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
         }
 
         $this->syncAliases();
+    }
+
+    /**
+     * Get the Google client. It is created once and shared by all lists.
+     */
+    protected function getClient(): GoogleClient
+    {
+        if (self::$client !== null) {
+            return self::$client;
+        }
+
+        $client = new GoogleClient();
+        $client->setAuthConfig($this->config['config']['google-groups']['service-account-file']);
+        $client->addScope([
+            CloudIdentity::CLOUD_IDENTITY_GROUPS,
+            Directory::ADMIN_DIRECTORY_GROUP,
+        ]);
+
+        // Only auto create uses the Groups Settings API. Asking for the scope
+        // otherwise would break domain-wide delegation setups without it.
+        if ($this->config['config']['google-groups']['auto-create-groups'] ?? false) {
+            $client->addScope(Groupssettings::APPS_GROUPS_SETTINGS);
+        }
+
+        if (isset($this->config['config']['google-groups']['subject'])) {
+            $client->setSubject($this->config['config']['google-groups']['subject']);
+        }
+
+        return self::$client = $client;
     }
 
     /**
