@@ -111,11 +111,14 @@ class Medlemsservice extends Odoo
      * Create a HTTP Client and set the timeout before getting the
      * client from our parent (Odoo).
      *
+     * Keep alive is on by default so all calls to an endpoint reuse
+     * one connection instead of doing a new TLS handshake per call.
+     *
      * {@inheritDoc}
      */
     protected function getClient(?string $path = null): XmlRpcClient
     {
-        $this->httpClient = new HttpClient();
+        $this->httpClient = new HttpClient(null, ['keepalive' => true]);
         if (!empty($this->config['config']['odoo']['client_options'])) {
             $this->httpClient->setOptions($this->config['config']['odoo']['client_options']);
         }
