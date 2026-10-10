@@ -13,7 +13,8 @@ extras:
     - foo@example.com
 
 odoo:
-  # Zend\Http\Client httpOptions. I.e. timeout:
+  # Laminas\Http\Client options. I.e. timeout. MSML sets keepalive
+  # to true by default. Set it to false to use a new connection per call.
   client_options:
     timeout: 10
 
