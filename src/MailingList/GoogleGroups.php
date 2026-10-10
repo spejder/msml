@@ -44,6 +44,11 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected static ?array $groups = null;
 
+    /**
+     * Max number of membership changes in one batch request.
+     */
+    protected const BATCH_SIZE = 50;
+
     protected CloudIdentity $cloudIdentity;
     protected Directory $directory;
     protected Groupssettings $groupsSettings;
@@ -271,11 +276,19 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected function unsubscribe(array $unsubscribers): void
     {
-        foreach ($unsubscribers as $unsubscriber) {
-            if (!$this->config['dry-run']) {
-                $this->cloudIdentity->groups_memberships->delete($this->membershipNames[$unsubscriber]);
-            }
+        if ($this->config['dry-run']) {
+            return;
         }
+
+        $this->sendInBatches(
+            $unsubscribers,
+            fn (string $unsubscriber): mixed => $this->cloudIdentity->groups_memberships->delete(
+                $this->membershipNames[$unsubscriber]
+            ),
+            function (string $unsubscriber, GoogleServiceException $e): void {
+                throw $e;
+            },
+        );
     }
 
     /**
@@ -283,24 +296,69 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
      */
     protected function subscribe(array $subscribers): void
     {
-        foreach ($subscribers as $subscriber) {
-            $membership = new Membership([
-                'preferredMemberKey' => new EntityKey(['id' => $subscriber]),
-                'roles' => [new MembershipRole(['name' => 'MEMBER'])],
-            ]);
+        if ($this->config['dry-run']) {
+            return;
+        }
 
-            if (!$this->config['dry-run']) {
-                try {
-                    $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
-                } catch (GoogleServiceException $e) {
-                    if ($e->getCode() === 404) {
-                        $this->output->writeln(
-                            'Error adding subscriber: ' . $e->getMessage(),
-                            OutputInterface::VERBOSITY_QUIET,
-                        );
-                    } else {
-                        throw $e;
-                    }
+        $this->sendInBatches(
+            $subscribers,
+            function (string $subscriber): mixed {
+                $membership = new Membership([
+                    'preferredMemberKey' => new EntityKey(['id' => $subscriber]),
+                    'roles' => [new MembershipRole(['name' => 'MEMBER'])],
+                ]);
+
+                return $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
+            },
+            function (string $subscriber, GoogleServiceException $e): void {
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
+
+                $this->output->writeln(
+                    'Error adding subscriber: ' . $e->getMessage(),
+                    OutputInterface::VERBOSITY_QUIET,
+                );
+            },
+        );
+    }
+
+    /**
+     * Send one membership request per address in batch requests.
+     *
+     * @param array<string> $addresses The addresses to send a request for.
+     * @param callable(string): mixed $request Makes the request for an address. In batch mode the
+     *   client returns the request instead of sending it.
+     * @param callable(string, GoogleServiceException): void $onError Handles a failed request.
+     */
+    protected function sendInBatches(array $addresses, callable $request, callable $onError): void
+    {
+        $client = $this->getClient();
+
+        foreach (array_chunk(array_values($addresses), self::BATCH_SIZE) as $chunk) {
+            $client->setUseBatch(true);
+
+            try {
+                $batch = $this->cloudIdentity->createBatch();
+
+                // Batch::add() makes a random key for keys that are
+                // loosely false, i.e. "0", so prefix the index.
+                foreach ($chunk as $i => $address) {
+                    $batch->add($request($address), "m{$i}");
+                }
+
+                $results = $batch->execute() ?? [];
+            } finally {
+                $client->setUseBatch(false);
+            }
+
+            foreach ($chunk as $i => $address) {
+                if (!array_key_exists("response-m{$i}", $results)) {
+                    throw new \RuntimeException("No response in batch request for {$address}.");
+                }
+
+                if ($results["response-m{$i}"] instanceof GoogleServiceException) {
+                    $onError($address, $results["response-m{$i}"]);
                 }
             }
         }
