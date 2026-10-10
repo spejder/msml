@@ -43,20 +43,18 @@ class DefaultCommand extends Command
         $loader->load('services.yml');
 
         $config = $this->container->get('config');
-        if (is_null($config)) {
+        if (!$config instanceof Config) {
             throw new \RuntimeException('No config service');
         }
 
-        /** @var \MSML\Config $config */
         $this->config = $config;
 
 
         $listFactory = $this->container->get('mailinglist.factory');
-        if (is_null($listFactory)) {
+        if (!$listFactory instanceof MailingListFactory) {
             throw new \RuntimeException('No mailing list factory');
         }
 
-        /** @var \MSML\MailingList\MailingListFactory $listFactory */
         $this->listFactory = $listFactory;
     }
 

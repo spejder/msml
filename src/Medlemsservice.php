@@ -31,7 +31,7 @@ class Medlemsservice extends Odoo
      *
      * @param \MSML\Config $config Configuration object
      *
-     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @SuppressWarnings("PHPMD.StaticAccess")
      */
     public function __construct(Config $config)
     {
