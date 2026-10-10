@@ -20,3 +20,24 @@ odoo:
 mlmmj:
   # Sudo, ssh, whatever to get to the /usr/bin/mlmmj-* binaries (remember trailing space):
   command_prefix: 'ssh mail.example.net '
+
+# Use with "mailinglist: GoogleGroups".
+#
+# Enable the Cloud Identity API and the Admin SDK API in the Google Cloud
+# project of the service account. Groups and members use the Cloud Identity
+# API. Aliases use the Admin SDK Directory API.
+#
+# Give the service account the Groups Admin role in the Admin console, or
+# set "subject" to use domain-wide delegation.
+#google-groups:
+#  # Path to the service account key file:
+#  service-account-file: account.json
+#  # Optional. The admin user to impersonate with domain-wide delegation:
+#  subject: admin@example.com
+#  # Optional. Create groups that do not exist:
+#  auto-create-groups: true
+#  # Required if auto-create-groups is true. Find it in the Admin console
+#  # under Account > Account settings:
+#  customer-id: C0123abcd
+#  # Optional. The text to put in front of each group description:
+#  description-prefix: "[MS]"

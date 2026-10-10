@@ -52,6 +52,7 @@
     },
     "extra": {
         "google/apiclient-services": [
+            "CloudIdentity",
             "Directory"
         ]
     },
