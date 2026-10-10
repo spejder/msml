@@ -146,6 +146,23 @@ class DefaultCommand extends Command
             }, ARRAY_FILTER_USE_KEY);
         }
 
+        $start = microtime(true);
+
+        // Lookup all the Enheder in as few calls as possible.
+        $ids = [];
+        $organizationCodes = [];
+        foreach ($lists as $list) {
+            foreach ($list['select'] as $conf) {
+                if (!empty($conf['org'])) {
+                    $organizationCodes[] = $conf['org'];
+                } else {
+                    $ids[] = $conf['id'];
+                }
+            }
+        }
+
+        $enheder->prefetch($ids, $organizationCodes);
+
         // Find the profiles each list selects.
         $selections = [];
         foreach ($lists as $listName => $list) {
@@ -167,6 +184,12 @@ class DefaultCommand extends Command
         $profiles->prefetch($profileIds);
         $profiles->prefetchRelatives($relativesProfileIds);
 
+        $output->writeln(
+            sprintf('Medlemsservice lookups took %.1f seconds.', microtime(true) - $start),
+            OutputInterface::VERBOSITY_VERBOSE
+        );
+        $start = microtime(true);
+
         foreach ($lists as $listName => $list) {
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
                 $output->writeln("<list>{$list['description']}</list>");
@@ -185,6 +208,11 @@ class DefaultCommand extends Command
                 fwrite($summaryFile, "---\n");
             }
         }
+
+        $output->writeln(
+            sprintf('Mailing list sync took %.1f seconds.', microtime(true) - $start),
+            OutputInterface::VERBOSITY_VERBOSE
+        );
 
         if (is_resource($summaryFile)) {
             fclose($summaryFile);
