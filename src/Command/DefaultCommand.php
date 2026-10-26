@@ -187,6 +187,7 @@ class DefaultCommand extends Command
             OutputInterface::VERBOSITY_VERBOSE
         );
         $start = microtime(true);
+        $errors = [];
 
         foreach ($lists as $listName => $list) {
             if ($output->getVerbosity() >= OutputInterface::VERBOSITY_NORMAL) {
@@ -201,6 +202,7 @@ class DefaultCommand extends Command
 
             $list = $this->listFactory->create($listName, $addresses, $this->config, $output);
             $list->save();
+            array_push($errors, ...$list->getErrors());
 
             if (is_resource($summaryFile)) {
                 fwrite($summaryFile, "---\n");
@@ -216,7 +218,16 @@ class DefaultCommand extends Command
             fclose($summaryFile);
         }
 
-        return 0;
+        if (!empty($errors)) {
+            $output->writeln(
+                sprintf('Mailing list sync had %d error(s).', count($errors)),
+                OutputInterface::VERBOSITY_QUIET
+            );
+
+            return Command::FAILURE;
+        }
+
+        return Command::SUCCESS;
     }
 
     /**
