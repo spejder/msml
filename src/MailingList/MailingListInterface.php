@@ -26,4 +26,11 @@ interface MailingListInterface
      * Save / sync the addresses to the mailing list.
      */
     public function save(): void;
+
+    /**
+     * Get the errors that save() skipped, so the run can fail at the end.
+     *
+     * @return array<string>
+     */
+    public function getErrors(): array;
 }

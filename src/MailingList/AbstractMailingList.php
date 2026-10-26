@@ -29,6 +29,13 @@ abstract class AbstractMailingList implements MailingListInterface
     protected array $currentSubscribers = [];
 
     /**
+     * Errors that did not stop the sync.
+     *
+     * @var array<string>
+     */
+    protected array $errors = [];
+
+    /**
      * Create list based on list name and addresses.
      *
      * {@inheritDoc}
@@ -93,6 +100,14 @@ abstract class AbstractMailingList implements MailingListInterface
                 fwrite($summaryFile, " - {$mail}\n");
             };
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getErrors(): array
+    {
+        return $this->errors;
     }
 
     /**

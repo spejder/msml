@@ -311,14 +311,15 @@ class GoogleGroups extends AbstractMailingList implements MailingListInterface
                 return $this->cloudIdentity->groups_memberships->create($this->groupName, $membership);
             },
             function (string $subscriber, GoogleServiceException $e): void {
-                if ($e->getCode() !== 404) {
+                // Cloud Identity gives 403 for some addresses that can't be
+                // added. The error names the group, so name the address.
+                if (!in_array($e->getCode(), [403, 404])) {
                     throw $e;
                 }
 
-                $this->output->writeln(
-                    'Error adding subscriber: ' . $e->getMessage(),
-                    OutputInterface::VERBOSITY_QUIET,
-                );
+                $error = "Error adding subscriber {$subscriber} to {$this->listName}: " . $e->getMessage();
+                $this->errors[] = $error;
+                $this->output->writeln($error, OutputInterface::VERBOSITY_QUIET);
             },
         );
     }
